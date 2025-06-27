@@ -1,13 +1,23 @@
 
 import './App.css'
+import { BrowserRouter as Router,  Route , Routes } from 'react-router-dom';
+import Start from './Component/Start';
+import CreateAccount from './Component/CreateAccount';
+import Login from './Component/Login';
+import ForgotPassword from './Component/ForgotPassoword';
 
 function App() {
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold text-blue-600">
-        Welcome to React
-      </h1>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Start />} />
+        <Route path="/create-account" element={<CreateAccount />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        {/* Add more routes as needed */}
+        
+      </Routes>
+    </Router>
   );
 }
 
