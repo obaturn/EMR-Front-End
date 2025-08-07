@@ -6,6 +6,9 @@ import CreateAccount from './Component/CreateAccount';
 import Login from './Component/Login';
 import ForgotPassword from './Component/ForgotPassoword';
 import ResetPassword from './Component/ResetPassword';
+import AdminDashboardPage from './Component/AdminDashBoardPage';
+import { CalenderPage } from './Component/CalenderPage';
+
 
 function App() {
   return (
@@ -16,6 +19,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/admin/calendar" element={<CalenderPage />} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         {/* Add more routes as needed */}
         
       </Routes>

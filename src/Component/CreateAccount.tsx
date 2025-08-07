@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateAccount() {
   const [email, setEmail] = useState("");
@@ -6,6 +7,18 @@ export default function CreateAccount() {
   const [DoctorName, setDoctorName] = useState("");
   const [password, setPassword] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+
+  const navigate = useNavigate();
+
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (agreeToTerms) {
+      // Logic to create account goes here
+      console.log("Account created for:", DoctorName, email, speciality);
+      navigate("/admin/dashboard",{ state: { doctorName: DoctorName } }); // Redirect to login after account creation
+      }
+    };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
@@ -32,8 +45,7 @@ export default function CreateAccount() {
           <p className="text-gray-600 mb-6 text-center md:text-left">
             Sign up to continue
           </p>
-
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <input
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
               type="text"
