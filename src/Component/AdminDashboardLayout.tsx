@@ -1,30 +1,33 @@
-import SidebarAdmin from './SideBarAdmin';
-import TopBarAdmin from './TopBarAdmin';
-import { type ReactNode } from 'react';
+import SidebarAdmin from "./SideBarAdmin"
+import TopBarAdmin from "./TopBarAdmin"
+import type { ReactNode } from "react"
 
-interface AdminDashboardLayoutProps {
-  children: ReactNode;
-  doctorName?: string;
+interface DashboardLayoutProps {
+  children: ReactNode
+  userName?: string
+  userRole?: string
+  specialty?: string
 }
 
-const AdminDashboardLayout = ({ children, doctorName = "Doctor" }: AdminDashboardLayoutProps) => {
+const DashboardLayout = ({
+  children,
+  userName = "User",
+  userRole = "doctor",
+  specialty = "",
+}: DashboardLayoutProps) => {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      
-      <SidebarAdmin />
-      
-      
+      <SidebarAdmin userRole={userRole} />
+
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top Bar */}
-        <TopBarAdmin doctorName={doctorName} />
-        
+        <TopBarAdmin userName={userName} userRole={userRole} specialty={specialty} />
+
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto bg-gray-50">{children}</main>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AdminDashboardLayout;
+export default DashboardLayout

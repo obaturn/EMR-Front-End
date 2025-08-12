@@ -1,17 +1,18 @@
-// src/Component/AdminDashboardPage.tsx
-import { useLocation } from "react-router-dom";
-import DashboardContent from "./AdminboardContent";
-import AdminDashboardLayout from "./AdminDashboardLayout";
+import { useLocation } from "react-router-dom"
+import DashboardContent from "./AdminboardContent"
+import DashboardLayout from "./AdminDashboardLayout"
 
-const AdminDashboardPage = () => {
-  const location = useLocation();
-  const doctorName = location.state?.doctorName || "Doctor";
+const DashboardPage = () => {
+  const location = useLocation()
+  const userName = location.state?.userName || "User"
+  const userRole = location.state?.userRole || "doctor"
+  const specialty = location.state?.specialty || ""
 
   return (
-    <AdminDashboardLayout doctorName={doctorName}>
-      <DashboardContent doctorName={doctorName} />
-    </AdminDashboardLayout>
-  );
-};
+    <DashboardLayout userName={userName} userRole={userRole} specialty={specialty}>
+      <DashboardContent userName={userName} userRole={userRole} specialty={specialty} />
+    </DashboardLayout>
+  )
+}
 
-export default AdminDashboardPage;
+export default DashboardPage

@@ -4,7 +4,7 @@ import CalendarView from './CalenderView'
 
 export const CalenderPage = () => {
   return (
-    <AdminDashboardLayout doctorName="Dr. Akintoye">
+    <AdminDashboardLayout userName="Dr. Akintoye">
       <CalendarView />
     </AdminDashboardLayout>
   )

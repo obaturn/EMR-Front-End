@@ -26,12 +26,12 @@ const CalendarView = () => {
 
     const days = []
     
-    // Add empty cells for days before the first day of the month
+    
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null)
     }
     
-    // Add days of the month
+    
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day))
     }
@@ -66,7 +66,7 @@ const CalendarView = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Header Section */}
+      
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold text-gray-800">Calendar</h2>
         <div className="flex space-x-3">
@@ -81,7 +81,7 @@ const CalendarView = () => {
         </div>
       </div>
 
-      {/* Invited Patients */}
+  
       <div className="mb-6">
         <h3 className="text-md font-medium text-gray-700 mb-2">
           <span className="inline-block w-4 h-4 bg-orange-500 rounded mr-2"></span>
@@ -92,10 +92,10 @@ const CalendarView = () => {
         </div>
       </div>
 
-      {/* Calendar */}
+      
       <div className="bg-white shadow-sm rounded-lg mb-6 border border-gray-200">
         <div className="p-6">
-          {/* Calendar Header */}
+          
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-800">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
@@ -116,7 +116,7 @@ const CalendarView = () => {
             </div>
           </div>
 
-          {/* Days of Week Header */}
+          
           <div className="grid grid-cols-7 gap-1 mb-2">
             {daysOfWeek.map((day) => (
               <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
@@ -125,7 +125,7 @@ const CalendarView = () => {
             ))}
           </div>
 
-          {/* Calendar Grid */}
+          
           <div className="grid grid-cols-7 gap-1">
             {days.map((date, index) => (
               <button
