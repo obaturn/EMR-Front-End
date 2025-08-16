@@ -48,6 +48,32 @@ export default function AddPatient() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (validateForm()) {
+      const storedPatients = JSON.parse(localStorage.getItem("patients") || "[]")
+
+      // Add the new patient to the list
+      storedPatients.push(formData)
+
+      // Save back to localStorage
+      localStorage.setItem("patients", JSON.stringify(storedPatients))
+
+      console.log("Patient saved:", formData)
+
+      // Optionally reset the form
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        dob: "",
+        age: "",
+        gender: "Male",
+        address: "",
+        city: "",
+        pincode: "",
+        aadhaar: "",
+        remarks: "",
+        category: "General",
+      })
       console.log("Form submitted:", formData)
       // Handle form submission here
     }
