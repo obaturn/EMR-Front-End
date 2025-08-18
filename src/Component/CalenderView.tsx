@@ -136,7 +136,30 @@ const CalendarView = () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    setAppointments((prev) => [...prev, appointment])
+
+    console.log("[v0] New appointment created:", appointment)
+    console.log("[v0] Patient details:", appointment.patient.name, appointment.patient.email)
+    console.log("[v0] Appointment date/time:", appointment.date, appointment.time)
+    console.log("[v0] Total appointments before adding:", appointments.length)
+
+    setAppointments((prev) => {
+      const updated = [...prev, appointment]
+      console.log("[v0] Total appointments after adding:", updated.length)
+      console.log(
+        "[v0] All appointments:",
+        updated.map((apt) => ({
+          patient: apt.patient.name,
+          date: apt.date,
+          time: apt.time,
+          status: apt.status,
+        })),
+      )
+      return updated
+    })
+
+    alert(
+      `✅ Appointment scheduled successfully!\n\nPatient: ${appointment.patient.name}\nDate: ${new Date(appointment.date).toLocaleDateString()}\nTime: ${appointment.time}\n\nNote: This appointment is stored temporarily. Add a database integration to persist appointments permanently.`,
+    )
   }
 
   const handleInvitationSent = (newInvitation: Omit<InvitationStatus, "id" | "createdAt">) => {
@@ -216,8 +239,31 @@ const CalendarView = () => {
             <FaUserPlus className="w-4 h-4" />
             Invite
           </button>
+          <button
+            onClick={() => {
+              console.log("[v0] Current appointments:", appointments)
+              console.log("[v0] Selected date:", selectedDate.toISOString().split("T")[0])
+              console.log("[v0] Appointments for selected date:", getDateAppointments(selectedDate))
+              alert(
+                `Debug Info:\n\nTotal Appointments: ${appointments.length}\nSelected Date: ${selectedDate.toLocaleDateString()}\nAppointments Today: ${getDateAppointments(selectedDate).length}\n\nCheck browser console for detailed logs.`,
+              )
+            }}
+            className="flex items-center gap-2 bg-blue-100 text-blue-600 px-4 py-2 rounded-md shadow-sm hover:bg-blue-200 border border-blue-200 transition-colors"
+          >
+            Debug ({appointments.length})
+          </button>
         </div>
       </div>
+
+      {appointments.length > mockAppointments.length && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            ⚠️ <strong>Temporary Storage:</strong> You have {appointments.length - mockAppointments.length} new
+            appointment(s) stored in memory. These will be lost when you refresh the page. Set up a database integration
+            to persist appointments permanently.
+          </p>
+        </div>
+      )}
 
       <div className="mb-6">
         <h3 className="text-md font-medium text-gray-700 mb-2">

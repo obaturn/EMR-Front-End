@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react"
@@ -12,27 +11,62 @@ export const Login = () => {
   const [rememberPassword, setRememberPassword] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Add your login logic here
-    setTimeout(() => setIsLoading(false), 2000) // Simulate API call
+
+    try {
+      const response = await fetch("http://localhost:8000/api/login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, remember_me: rememberPassword }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setErrorMessage(data.detail || "Login failed. Check your credentials.")
+        setIsLoading(false)
+        return
+      }
+
+      // Save tokens and user info
+      localStorage.setItem("accessToken", data.tokens.access)
+      localStorage.setItem("refreshToken", data.tokens.refresh)
+      localStorage.setItem("user", JSON.stringify(data.user))
+
+  setTimeout(() => {
+  navigate("/admin/dashboard", {
+    state: {
+      userName: data.user.name,
+      userRole: data.user.role,
+      specialty: data.user.specialty || "",
+    },
+  })
+  setIsLoading(false)
+}, 3000)
+ 
+    } catch (error) {
+      console.error(error)
+      setErrorMessage("An unexpected error occurred.")
+      setIsLoading(false)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side: Enhanced gradient background with pattern */}
+      {/* Left side */}
       <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 relative overflow-hidden">
-        {/* Background pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-32 h-32 bg-white rounded-full blur-xl"></div>
           <div className="absolute bottom-32 right-16 w-48 h-48 bg-white rounded-full blur-2xl"></div>
           <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-white rounded-full blur-lg"></div>
         </div>
-
-        {/* Content */}
         <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
           <div className="max-w-md text-center">
             <h2 className="text-4xl font-bold mb-6">Welcome Back!</h2>
@@ -43,10 +77,10 @@ export const Login = () => {
         </div>
       </div>
 
-      {/* Right side: Enhanced login form */}
+      {/* Right side */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-gray-50">
         <div className="w-full max-w-md">
-          {/* Mobile header with gradient background */}
+          {/* Mobile header */}
           <div className="lg:hidden bg-gradient-to-r from-orange-400 to-orange-500 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 p-6 mb-8 text-center">
             <h1 className="text-3xl font-bold text-white">
               <span>S10</span>
@@ -67,11 +101,15 @@ export const Login = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {errorMessage && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+                  {errorMessage}
+                </div>
+              )}
+
               {/* Email field */}
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700 block">
-                  Email Address
-                </label>
+                <label htmlFor="email" className="text-sm font-medium text-gray-700 block">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <input
@@ -88,9 +126,7 @@ export const Login = () => {
 
               {/* Password field */}
               <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700 block">
-                  Password
-                </label>
+                <label htmlFor="password" className="text-sm font-medium text-gray-700 block">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <input
@@ -122,9 +158,7 @@ export const Login = () => {
                     onChange={(e) => setRememberPassword(e.target.checked)}
                     className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded transition-colors"
                   />
-                  <label htmlFor="remember" className="ml-2 text-gray-700">
-                    Remember me
-                  </label>
+                  <label htmlFor="remember" className="ml-2 text-gray-700">Remember me</label>
                 </div>
                 <button
                   type="button"
@@ -180,13 +214,9 @@ export const Login = () => {
           {/* Footer */}
           <p className="text-center text-xs text-gray-500 mt-6">
             By signing in, you agree to our{" "}
-            <a href="#" className="text-orange-500 hover:underline">
-              Terms of Service
-            </a>{" "}
+            <a href="#" className="text-orange-500 hover:underline">Terms of Service</a>{" "}
             and{" "}
-            <a href="#" className="text-orange-500 hover:underline">
-              Privacy Policy
-            </a>
+            <a href="#" className="text-orange-500 hover:underline">Privacy Policy</a>
           </p>
         </div>
       </div>

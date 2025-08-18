@@ -118,7 +118,7 @@ const roleConfigs: Record<Exclude<UserRole, "">, RoleConfig> = {
 export default function CreateAccount() {
   const [role, setRole] = useState<UserRole>("")
   const [email, setEmail] = useState("")
-  const [specialty, setSpecialty] = useState("")
+  const [speciality, setSpeciality] = useState("")
   const [fullName, setFullName] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [password, setPassword] = useState("")
@@ -134,7 +134,7 @@ export default function CreateAccount() {
   
   const handleRoleChange = (newRole: UserRole) => {
     setRole(newRole)
-    setSpecialty("") // Reset specialty when role changes
+    setSpeciality("") // Reset specialty when role changes
     setLicenseNumber("") // Reset license number
   }
 
@@ -142,33 +142,76 @@ export default function CreateAccount() {
   const showPasswordError = confirmPassword.length > 0 && !passwordsMatch
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (agreeToTerms && role && passwordsMatch) {
-      const accountData = {
-        role,
-        fullName,
-        email,
-        phoneNumber: selectedCountry.code + phoneNumber,
-        specialty,
-        licenseNumber: role !== "pharmacy" ? licenseNumber : undefined,
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  const nameParts = fullName.trim().split(" ");
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ") || "";
+  
+  if (agreeToTerms && role && passwordsMatch) {
+    const accountData = {
+      role,
+      first_name: firstName,
+      last_name: lastName,
+      username: email,  // Using email as username
+      email,           // Required field
+      password,
+      password2: confirmPassword,
+      phone_number: phoneNumber.replace(/\D/g, ""),
+      country_code: selectedCountry.code,
+      speciality,
+      license_number: licenseNumber,
+    };
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(accountData),
+      });
+
+      const responseData = await res.json();
+
+      if (!res.ok) {
+        // Extract validation errors from response
+        const errorMessages = [];
+        if (responseData) {
+          for (const [field, errors] of Object.entries(responseData)) {
+            errorMessages.push(
+              `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`
+            );
+          }
+        }
+        throw new Error(
+          errorMessages.length > 0 
+            ? errorMessages.join('\n') 
+            : 'Registration failed'
+        );
       }
 
-      console.log("Account created:", accountData)
+      console.log("Account created:", responseData);
 
       // Navigate based on role
       const dashboardRoute =
-        role === "doctor" ? "/admin/dashboard" : role === "nurse" ? "/nurse/dashboard" : "/pharmacy/dashboard"
+        role === "doctor" ? "/admin/dashboard" : 
+        role === "nurse" ? "/nurse/dashboard" : 
+        "/pharmacy/dashboard";
 
       navigate(dashboardRoute, {
         state: {
           userName: fullName,
           userRole: role,
-          specialty: specialty,
+          speciality: speciality,
         },
-      })
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      alert(error instanceof Error ? error.message : "Registration failed");
     }
   }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
@@ -233,8 +276,8 @@ export default function CreateAccount() {
                 <div className="relative">
                   <select
                     className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400 appearance-none"
-                    value={specialty}
-                    onChange={(e) => setSpecialty(e.target.value)}
+                    value={speciality}
+                    onChange={(e) => setSpeciality(e.target.value)}
                     required
                   >
                     <option value="" disabled>
@@ -265,7 +308,7 @@ export default function CreateAccount() {
                   />
                 )}
 
-                {/* Pharmacy Registration Number */}
+              
                 {role === "pharmacy" && (
                   <input
                     className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
@@ -300,7 +343,7 @@ export default function CreateAccount() {
                     }}
                   >
                     {countries.map((country) => (
-                      <option key={country.code} value={country.code}>
+                      <option key={`${country.code}-${country.name}`} value={country.code}>
                         {country.flag} {country.code}
                       </option>
                     ))}

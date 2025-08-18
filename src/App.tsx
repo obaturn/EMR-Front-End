@@ -9,6 +9,8 @@ import DashboardPage from "./Component/AdminDashBoardPage"
 import { CalenderPage } from "./Component/CalenderPage"
 import { AddPatientView } from "./Component/AddPatientView"
 import AddPatient from "./Component/AddPatient"
+import ReportsPage from "./Component/ReportPages"
+import ProfilePage from "./Component/ProfilePage"
 
 function App() {
   return (
@@ -36,6 +38,17 @@ function App() {
         <Route path="/doctor/calendar" element={<CalenderPage />} />
         <Route path="/nurse/calendar" element={<CalenderPage />} />
         <Route path="/pharmacy/calendar" element={<CalenderPage />} />
+
+        {/* Reports routes for all roles */}
+        <Route path="/admin/reports" element={<ReportsPage userRole="admin" userName="Admin" />} />
+        <Route path="/doctor/reports" element={<ReportsPage userRole="doctor" userName="Dr. Akintoye" />} />
+        <Route path="/nurse/reports" element={<ReportsPage userRole="nurse" userName="Nurse" />} />
+        <Route path="/pharmacy/reports" element={<ReportsPage userRole="pharmacy" userName="Pharmacist" />} />
+
+        <Route path="/admin/profile" element={<ProfilePage userRole="admin" userName="Admin" />} />
+        <Route path="/doctor/profile" element={<ProfilePage userRole="doctor" userName="Dr. Akintoye" />} />
+        <Route path="/nurse/profile" element={<ProfilePage userRole="nurse" userName="Nurse" />} />
+        <Route path="/pharmacy/profile" element={<ProfilePage userRole="pharmacy" userName="Pharmacist" />} />
 
         {/* Add more role-specific routes as needed */}
       </Routes>
