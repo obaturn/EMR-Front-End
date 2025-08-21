@@ -19,17 +19,41 @@ import {
 import { Calendar, Clock } from "lucide-react"
 import { mockAppointments, getAppointmentStatusColor, formatAppointmentTime } from "../lib/appointment-data"
 import type { Appointment } from "../types/appointment"
+import type { Patient } from "../ApiService/PatientsService"
+import { patientService } from "../ApiService/PatientsService"
 
 export const PatientView = () => {
   const navigate = useNavigate()
-  const [patients, setPatients] = useState<any[]>([])
+  const [patients, setPatients] = useState<Patient[]>([])
   const appointments: Appointment[] = mockAppointments
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const storedPatients = JSON.parse(localStorage.getItem("patients") || "[]")
-    setPatients(storedPatients)
+    const fetchPatients = async () => {
+      try {
+        setIsLoading(true)
+        const patientsData = await patientService.getPatients()
+        setPatients(patientsData)
+        // Also store in localStorage for demo purposes (optional)
+        localStorage.setItem("patients", JSON.stringify(patientsData))
+      } catch (error) {
+        console.error("Error fetching patients:", error)
+        // Fallback to localStorage if API fails
+        const storedPatients = JSON.parse(localStorage.getItem("patients") || "[]")
+        // Convert date strings to Date objects
+        const parsedPatients = storedPatients.map((p: any) => ({
+          ...p,
+          date_of_birth: new Date(p.date_of_birth)
+        }))
+        setPatients(parsedPatients)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchPatients()
   }, [])
 
   const handleAddPatientClick = () => {
@@ -78,19 +102,42 @@ export const PatientView = () => {
     setSelectedPatientId(selectedPatientId === patientId ? null : patientId)
   }
 
-  const filteredPatients = patients.filter(
-    (patient) =>
-      `${patient.firstName} ${patient.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm),
-  )
+  const calculateAge = (dob: Date) => {
+    const today = new Date()
+    let age = today.getFullYear() - dob.getFullYear()
+    const monthDiff = today.getMonth() - dob.getMonth()
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--
+    }
+    
+    return age
+  }
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     })
+  }
+
+  const filteredPatients = patients.filter(
+    (patient) =>
+      `${patient.first_name} ${patient.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (patient.email && patient.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (patient.phone && patient.phone.includes(searchTerm)),
+  )
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading patients...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -146,7 +193,7 @@ export const PatientView = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">With Appointments</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {patients.filter((p) => hasUpcomingAppointment(p.id || `patient-${patients.indexOf(p)}`)).length}
+                  {patients.filter((p) => hasUpcomingAppointment(p.id?.toString() || `patient-${patients.indexOf(p)}`)).length}
                 </p>
               </div>
               <div className="bg-green-100 p-3 rounded-full">
@@ -160,7 +207,7 @@ export const PatientView = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Need Reschedule</p>
                 <p className="text-2xl font-bold text-orange-600">
-                  {patients.filter((p) => needsReschedule(p.id || `patient-${patients.indexOf(p)}`)).length}
+                  {patients.filter((p) => needsReschedule(p.id?.toString() || `patient-${patients.indexOf(p)}`)).length}
                 </p>
               </div>
               <div className="bg-orange-100 p-3 rounded-full">
@@ -195,7 +242,7 @@ export const PatientView = () => {
             {filteredPatients.length > 0 ? (
               <div className="grid gap-6">
                 {filteredPatients.map((patient, index) => {
-                  const patientId = patient.id || `patient-${index}`
+                  const patientId = patient.id?.toString() || `patient-${index}`
                   const upcomingAppointment = getPatientUpcomingAppointment(patientId)
                   const lastAppointment = getPatientLastAppointment(patientId)
                   const patientAppointments = getPatientAppointments(patientId)
@@ -217,7 +264,7 @@ export const PatientView = () => {
                               </div>
                               <div>
                                 <h3 className="text-xl font-bold text-gray-900">
-                                  {patient.firstName} {patient.lastName}
+                                  {patient.first_name} {patient.last_name}
                                 </h3>
                                 <div className="flex items-center gap-2 mt-1">
                                   <FaUserTag className="text-gray-400 text-sm" />
@@ -232,7 +279,7 @@ export const PatientView = () => {
                                             : "bg-gray-100 text-gray-700"
                                     }`}
                                   >
-                                    {patient.category}
+                                    {patient.category || "General"}
                                   </span>
                                 </div>
                               </div>
@@ -246,38 +293,54 @@ export const PatientView = () => {
                               <div>
                                 <p className="text-xs text-gray-500 font-medium">Age & Gender</p>
                                 <p className="text-sm font-semibold text-gray-900">
-                                  {patient.age} years, {patient.gender}
+                                  {calculateAge(patient.date_of_birth)} years, {patient.gender}
                                 </p>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100">
-                              <FaPhone className="text-green-500" />
+                              <FaCalendarAlt className="text-blue-500" />
                               <div>
-                                <p className="text-xs text-gray-500 font-medium">Phone</p>
-                                <p className="text-sm font-semibold text-gray-900">{patient.phone}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100">
-                              <FaEnvelope className="text-purple-500" />
-                              <div>
-                                <p className="text-xs text-gray-500 font-medium">Email</p>
-                                <p className="text-sm font-semibold text-gray-900 truncate">{patient.email}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100 md:col-span-2">
-                              <FaMapMarkerAlt className="text-red-500" />
-                              <div>
-                                <p className="text-xs text-gray-500 font-medium">Address</p>
+                                <p className="text-xs text-gray-500 font-medium">Date of Birth</p>
                                 <p className="text-sm font-semibold text-gray-900">
-                                  {patient.address ? `${patient.address}, ` : ""}
-                                  {patient.city}
-                                  {patient.pincode ? `, ${patient.pincode}` : ""}
+                                  {formatDate(patient.date_of_birth)}
                                 </p>
                               </div>
                             </div>
+
+                            {patient.phone && (
+                              <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100">
+                                <FaPhone className="text-green-500" />
+                                <div>
+                                  <p className="text-xs text-gray-500 font-medium">Phone</p>
+                                  <p className="text-sm font-semibold text-gray-900">{patient.phone}</p>
+                                </div>
+                              </div>
+                            )}
+
+                            {patient.email && (
+                              <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100">
+                                <FaEnvelope className="text-purple-500" />
+                                <div>
+                                  <p className="text-xs text-gray-500 font-medium">Email</p>
+                                  <p className="text-sm font-semibold text-gray-900 truncate">{patient.email}</p>
+                                </div>
+                              </div>
+                            )}
+
+                            {(patient.address || patient.city) && (
+                              <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100 md:col-span-2">
+                                <FaMapMarkerAlt className="text-red-500" />
+                                <div>
+                                  <p className="text-xs text-gray-500 font-medium">Address</p>
+                                  <p className="text-sm font-semibold text-gray-900">
+                                    {patient.address ? `${patient.address}, ` : ""}
+                                    {patient.city}
+                                    {patient.pincode ? `, ${patient.pincode}` : ""}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
 
                             {patient.remarks && (
                               <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100">
@@ -300,7 +363,7 @@ export const PatientView = () => {
                                     <div>
                                       <p className="text-xs text-blue-600 font-medium">Next Appointment</p>
                                       <p className="text-sm font-semibold text-blue-900">
-                                        {formatDate(upcomingAppointment.date)} at{" "}
+                                        {formatDate(new Date(upcomingAppointment.date))} at{" "}
                                         {formatAppointmentTime(upcomingAppointment.time)}
                                       </p>
                                       <span
@@ -317,7 +380,7 @@ export const PatientView = () => {
                                     <div>
                                       <p className="text-xs text-gray-500 font-medium">Last Visit</p>
                                       <p className="text-sm font-semibold text-gray-700">
-                                        {formatDate(lastAppointment.date)}
+                                        {formatDate(new Date(lastAppointment.date))}
                                       </p>
                                       <span
                                         className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${getAppointmentStatusColor(lastAppointment.status)}`}
@@ -385,7 +448,7 @@ export const PatientView = () => {
                                         </span>
                                       </div>
                                       <p className="text-sm text-gray-600">
-                                        {formatDate(appointment.date)} at {formatAppointmentTime(appointment.time)} •{" "}
+                                        {formatDate(new Date(appointment.date))} at {formatAppointmentTime(appointment.time)} •{" "}
                                         {appointment.duration}min
                                       </p>
                                     </div>

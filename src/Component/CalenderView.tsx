@@ -1,10 +1,10 @@
 "use client"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { FaChevronLeft, FaChevronRight, FaPlus, FaUserPlus, FaClock, FaEnvelope } from "react-icons/fa"
 import AppointmentModal from "./AppointmentModal"
 import InvitePatientModal from "./InvitedPatients"
-import { mockAppointments, getAppointmentStatusColor, mockInvitations } from "../lib/appointment-data"
+import { getAppointmentStatusColor, formatAppointmentTime, getInvitationStatusColor } from "../lib/appointment-data"
+import api from "../ApiService/Api"
 import type { Appointment, InvitationStatus } from "../types/appointment"
 
 type CalendarValue = Date
@@ -14,25 +14,43 @@ const CalendarView = () => {
   const [selectedDate, setSelectedDate] = useState<CalendarValue>(new Date())
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false)
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments)
-  const [invitations, setInvitations] = useState<InvitationStatus[]>(mockInvitations)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [invitations, setInvitations] = useState<InvitationStatus[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ]
 
-  const daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"]
+  const daysOfWeek = [
+    { label: "S", name: "Sunday" },
+    { label: "M", name: "Monday" },
+    { label: "T", name: "Tuesday" },
+    { label: "W", name: "Wednesday" },
+    { label: "T", name: "Thursday" },
+    { label: "F", name: "Friday" },
+    { label: "S", name: "Saturday" },
+  ]
+
+  useEffect(() => {
+    setLoading(true)
+    Promise.all([
+      api.get("/appointments/"),
+      api.get("/invitations/"),
+    ])
+      .then(([apptRes, invRes]) => {
+        setAppointments(apptRes.data)
+        setInvitations(invRes.data)
+        setLoading(false)
+      })
+      .catch((err) => {
+        setError("Failed to load data: " + (err.response?.data?.detail || err.message))
+        setLoading(false)
+        console.error("Error loading data:", err)
+      })
+  }, [])
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
@@ -42,27 +60,20 @@ const CalendarView = () => {
     const daysInMonth = lastDay.getDate()
     const startingDayOfWeek = firstDay.getDay()
 
-    const days = []
-
+    const days: (Date | null)[] = []
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null)
     }
-
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day))
     }
-
     return days
   }
 
   const navigateMonth = (direction: "prev" | "next") => {
     setCurrentDate((prev) => {
       const newDate = new Date(prev)
-      if (direction === "prev") {
-        newDate.setMonth(prev.getMonth() - 1)
-      } else {
-        newDate.setMonth(prev.getMonth() + 1)
-      }
+      newDate.setMonth(direction === "prev" ? prev.getMonth() - 1 : prev.getMonth() + 1)
       return newDate
     })
   }
@@ -105,19 +116,7 @@ const CalendarView = () => {
         {Object.entries(statusCounts).map(([status, count]) => (
           <div
             key={status}
-            className={`w-1.5 h-1.5 rounded-full ${
-              status === "Scheduled"
-                ? "bg-blue-500"
-                : status === "Confirmed"
-                  ? "bg-green-500"
-                  : status === "In Progress"
-                    ? "bg-yellow-500"
-                    : status === "Completed"
-                      ? "bg-gray-500"
-                      : status === "Cancelled"
-                        ? "bg-red-500"
-                        : "bg-orange-500"
-            }`}
+            className={`w-1.5 h-1.5 rounded-full ${getAppointmentStatusColor(status as Appointment["status"])}`}
             title={`${count} ${status}`}
           />
         ))}
@@ -130,45 +129,54 @@ const CalendarView = () => {
   }
 
   const handleAppointmentCreated = (newAppointment: Omit<Appointment, "id" | "createdAt" | "updatedAt">) => {
-    const appointment: Appointment = {
-      ...newAppointment,
-      id: `apt-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-
-    console.log("[v0] New appointment created:", appointment)
-    console.log("[v0] Patient details:", appointment.patient.name, appointment.patient.email)
-    console.log("[v0] Appointment date/time:", appointment.date, appointment.time)
-    console.log("[v0] Total appointments before adding:", appointments.length)
-
-    setAppointments((prev) => {
-      const updated = [...prev, appointment]
-      console.log("[v0] Total appointments after adding:", updated.length)
-      console.log(
-        "[v0] All appointments:",
-        updated.map((apt) => ({
-          patient: apt.patient.name,
-          date: apt.date,
-          time: apt.time,
-          status: apt.status,
-        })),
-      )
-      return updated
-    })
-
-    alert(
-      `✅ Appointment scheduled successfully!\n\nPatient: ${appointment.patient.name}\nDate: ${new Date(appointment.date).toLocaleDateString()}\nTime: ${appointment.time}\n\nNote: This appointment is stored temporarily. Add a database integration to persist appointments permanently.`,
-    )
+    const patientName = newAppointment.patient?.name || "Unknown Patient"
+    console.log("Creating appointment with payload:", JSON.stringify(newAppointment, null, 2))
+    api
+      .post("/appointments/create/", {
+        patient_id: newAppointment.patientId,
+        date: newAppointment.date,
+        time: newAppointment.time,
+        duration: newAppointment.duration,
+        type: newAppointment.type,
+        status: newAppointment.status,
+        symptoms: newAppointment.symptoms,
+        notes: newAppointment.notes,
+      })
+      .then((res) => {
+        setAppointments((prev) => [...prev, res.data])
+        alert(`✅ Appointment scheduled successfully for ${patientName}!`)
+      })
+      .catch((err) => {
+        const errorMsg = err.response?.data?.error || err.response?.data?.detail || "Unknown error"
+        console.error("Appointment creation error:", err, "Response:", JSON.stringify(err.response?.data, null, 2))
+        alert(`Error creating appointment: ${errorMsg}`)
+      })
   }
 
   const handleInvitationSent = (newInvitation: Omit<InvitationStatus, "id" | "createdAt">) => {
-    const invitation: InvitationStatus = {
-      ...newInvitation,
-      id: `inv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString(),
+    const payload = {
+      patient_id: newInvitation.patientId,
+      preferredDates: newInvitation.preferredDates.filter(date => date && /^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(new Date(date).getTime())),
+      status: newInvitation.status,
     }
-    setInvitations((prev) => [...prev, invitation])
+    console.log("Sending invitation payload:", JSON.stringify(payload, null, 2))
+    if (payload.preferredDates.length === 0) {
+      console.error("No valid preferred dates provided")
+      alert("Error: Please provide at least one valid preferred date")
+      return
+    }
+    api
+      .post("/invitations/create/", payload)
+      .then((res) => {
+        console.log("Invitation response:", JSON.stringify(res.data, null, 2))
+        setInvitations((prev) => [...prev, res.data])
+        alert(`✅ Invitation sent successfully to ${newInvitation.patient.name || "Unknown Patient"}!`)
+      })
+      .catch((err) => {
+        const errorMsg = err.response?.data?.preferredDates?.[0] || err.response?.data?.detail || "Unknown error"
+        console.error("Invitation error:", err, "Response:", JSON.stringify(err.response?.data, null, 2))
+        alert(`Error sending invitation: ${errorMsg}`)
+      })
   }
 
   const handleCreateClick = () => {
@@ -179,35 +187,12 @@ const CalendarView = () => {
     setIsInviteModalOpen(true)
   }
 
-  const getInvitationStatusColor = (status: InvitationStatus["status"]) => {
-    switch (status) {
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "Accepted":
-        return "bg-green-100 text-green-800"
-      case "Declined":
-        return "bg-red-100 text-red-800"
-      case "Expired":
-        return "bg-gray-100 text-gray-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
   const formatInvitationDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     })
-  }
-
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(":")
-    const hour = Number.parseInt(hours)
-    const ampm = hour >= 12 ? "PM" : "AM"
-    const displayHour = hour % 12 || 12
-    return `${displayHour}:${minutes} ${ampm}`
   }
 
   const days = getDaysInMonth(currentDate)
@@ -219,6 +204,9 @@ const CalendarView = () => {
     digitalHPI: appointments.filter((apt) => apt.status === "In Progress").length,
   }
   const selectedDateAppointments = getDateAppointments(selectedDate)
+
+  if (loading) return <div className="p-6 text-center text-gray-600">Loading...</div>
+  if (error) return <div className="p-6 text-center text-red-600">Error: {error}</div>
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -239,31 +227,8 @@ const CalendarView = () => {
             <FaUserPlus className="w-4 h-4" />
             Invite
           </button>
-          <button
-            onClick={() => {
-              console.log("[v0] Current appointments:", appointments)
-              console.log("[v0] Selected date:", selectedDate.toISOString().split("T")[0])
-              console.log("[v0] Appointments for selected date:", getDateAppointments(selectedDate))
-              alert(
-                `Debug Info:\n\nTotal Appointments: ${appointments.length}\nSelected Date: ${selectedDate.toLocaleDateString()}\nAppointments Today: ${getDateAppointments(selectedDate).length}\n\nCheck browser console for detailed logs.`,
-              )
-            }}
-            className="flex items-center gap-2 bg-blue-100 text-blue-600 px-4 py-2 rounded-md shadow-sm hover:bg-blue-200 border border-blue-200 transition-colors"
-          >
-            Debug ({appointments.length})
-          </button>
         </div>
       </div>
-
-      {appointments.length > mockAppointments.length && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800">
-            ⚠️ <strong>Temporary Storage:</strong> You have {appointments.length - mockAppointments.length} new
-            appointment(s) stored in memory. These will be lost when you refresh the page. Set up a database integration
-            to persist appointments permanently.
-          </p>
-        </div>
-      )}
 
       <div className="mb-6">
         <h3 className="text-md font-medium text-gray-700 mb-2">
@@ -283,9 +248,9 @@ const CalendarView = () => {
                       <FaEnvelope className="w-3 h-3 text-orange-600" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-gray-900 text-sm">{invitation.patient.name}</h4>
+                      <h4 className="font-medium text-gray-900 text-sm">{invitation.patient.name || "Unknown Patient"}</h4>
                       <p className="text-xs text-gray-600">
-                        Invited {formatInvitationDate(invitation.invitedDate)} •{invitation.preferredDates.length} date
+                        Invited {formatInvitationDate(invitation.invitedDate)} • {invitation.preferredDates.length} date
                         {invitation.preferredDates.length !== 1 ? "s" : ""} suggested
                       </p>
                     </div>
@@ -336,8 +301,8 @@ const CalendarView = () => {
 
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {daysOfWeek.map((day) => (
-                  <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
-                    {day}
+                  <div key={day.name} className="p-2 text-center text-sm font-medium text-gray-500">
+                    {day.label}
                   </div>
                 ))}
               </div>
@@ -435,9 +400,9 @@ const CalendarView = () => {
                       >
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900 text-sm">{appointment.patient.name}</h4>
+                            <h4 className="font-medium text-gray-900 text-sm">{appointment.patient.name || "Unknown Patient"}</h4>
                             <p className="text-xs text-gray-600">
-                              {formatTime(appointment.time)} • {appointment.duration}min
+                              {formatAppointmentTime(appointment.time)} • {appointment.duration}min
                             </p>
                           </div>
                           <span

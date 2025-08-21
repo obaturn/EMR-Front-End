@@ -1,5 +1,22 @@
 import type { Patient, Appointment, InvitationStatus } from "../types/appointment"
 
+
+// lib/appointment-data.ts
+export function getInvitationStatusColor(status: "Pending" | "Accepted" | "Declined" | "Expired") {
+  switch (status) {
+    case "Pending":
+      return "bg-yellow-100 text-yellow-800";
+    case "Accepted":
+      return "bg-green-100 text-green-800";
+    case "Declined":
+      return "bg-red-100 text-red-800";
+    case "Expired":
+      return "bg-gray-100 text-gray-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+}
+
 // Mock patients data
 export const mockPatients: Patient[] = [
   {

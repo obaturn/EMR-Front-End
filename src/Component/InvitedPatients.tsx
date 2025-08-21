@@ -1,8 +1,7 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { X, Mail, Calendar, User, Search, Plus } from "lucide-react"
-import { mockPatients } from "../lib/appointment-data"
+import api from "../ApiService/Api"
 import type { Patient, InvitationStatus } from "../types/appointment"
 
 interface InvitePatientModalProps {
@@ -16,23 +15,46 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
   const [searchTerm, setSearchTerm] = useState("")
   const [preferredDates, setPreferredDates] = useState<string[]>([])
   const [message, setMessage] = useState("")
-
-  const filteredPatients = mockPatients.filter(
-    (patient) =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm),
-  )
+  const [patients, setPatients] = useState<Patient[]>([])
+  const [loadingPatients, setLoadingPatients] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [dateError, setDateError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!isOpen) {
-      // Reset form when modal closes
+    if (isOpen) {
+      setLoadingPatients(true)
+      api
+        .get("/patients/", { params: { search: searchTerm.trim() } })
+        .then((res) => {
+          console.log("Fetched patients:", res.data)
+          setPatients(res.data)
+          setLoadingPatients(false)
+        })
+        .catch((err) => {
+          const errorMsg = err.response?.data?.detail || err.message || "Failed to load patients"
+          setError(errorMsg)
+          setLoadingPatients(false)
+          console.error("Error fetching patients:", err)
+        })
+    } else {
       setSelectedPatients([])
       setSearchTerm("")
       setPreferredDates([])
       setMessage("")
+      setPatients([])
+      setError(null)
+      setDateError(null)
     }
-  }, [isOpen])
+  }, [isOpen, searchTerm])
+
+  const normalizePhone = (str: string) => str.replace(/\D/g, "")
+
+  const filteredPatients = patients.filter(
+    (patient) =>
+      (patient.name?.toLowerCase() || "").includes(searchTerm.trim().toLowerCase()) ||
+      (patient.email?.toLowerCase() || "").includes(searchTerm.trim().toLowerCase()) ||
+      (patient.phone ? normalizePhone(patient.phone) : "").includes(normalizePhone(searchTerm.trim()))
+  )
 
   const handlePatientToggle = (patient: Patient) => {
     setSelectedPatients((prev) => {
@@ -43,6 +65,7 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
         return [...prev, patient]
       }
     })
+    setError(null)
   }
 
   const handleDateAdd = () => {
@@ -52,23 +75,55 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
 
     if (!preferredDates.includes(dateStr)) {
       setPreferredDates((prev) => [...prev, dateStr])
+      setDateError(null)
     }
   }
 
   const handleDateChange = (index: number, newDate: string) => {
+    if (!newDate) {
+      setDateError("Please select a valid date")
+      return
+    }
+    const selectedDate = new Date(newDate)
+    const minDate = new Date(getMinDate())
+    if (isNaN(selectedDate.getTime())) {
+      setDateError("Invalid date format. Please select a valid date")
+      return
+    }
+    if (selectedDate < minDate) {
+      setDateError("Selected date cannot be in the past")
+      return
+    }
     setPreferredDates((prev) => {
       const updated = [...prev]
       updated[index] = newDate
       return updated
     })
+    setDateError(null)
   }
 
   const handleDateRemove = (index: number) => {
     setPreferredDates((prev) => prev.filter((_, i) => i !== index))
+    setDateError(null)
   }
 
   const handleSendInvitations = () => {
-    if (selectedPatients.length === 0 || preferredDates.length === 0) return
+    if (selectedPatients.length === 0) {
+      setError("Please select at least one patient")
+      return
+    }
+    if (preferredDates.length === 0) {
+      setDateError("Please add at least one preferred date")
+      return
+    }
+    const invalidDates = preferredDates.filter((date) => !date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(new Date(date).getTime()))
+    if (invalidDates.length > 0) {
+      setDateError("All preferred dates must be valid (YYYY-MM-DD)")
+      return
+    }
+
+    console.log("Preparing to send invitations for patients:", selectedPatients.map((p) => p.id))
+    console.log("Preferred dates:", preferredDates)
 
     selectedPatients.forEach((patient) => {
       const invitation: Omit<InvitationStatus, "id" | "createdAt"> = {
@@ -77,8 +132,9 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
         invitedDate: new Date().toISOString(),
         preferredDates: [...preferredDates],
         status: "Pending",
-        invitedBy: "Dr. Akintoye",
+        invitedBy: "Current User",
       }
+      console.log("Sending invitation for patient:", patient.id, JSON.stringify(invitation, null, 2))
       onInvitationSent(invitation)
     })
 
@@ -86,9 +142,9 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
   }
 
   const getMinDate = () => {
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    return tomorrow.toISOString().split("T")[0]
+    const today = new Date()
+    today.setDate(today.getDate() + 1)
+    return today.toISOString().split("T")[0]
   }
 
   if (!isOpen) return null
@@ -96,7 +152,6 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Mail className="w-6 h-6 text-white" />
@@ -115,11 +170,9 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
           <div className="space-y-6">
-            {/* Patient Selection */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Patients to Invite</h3>
 
-              {/* Search */}
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -131,7 +184,10 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
                 />
               </div>
 
-              {/* Selected Patients Summary */}
+              {error && !dateError && (
+                <p className="text-red-600 text-sm mb-2">{error}</p>
+              )}
+
               {selectedPatients.length > 0 && (
                 <div className="bg-orange-50 rounded-lg p-3 mb-4">
                   <p className="text-sm font-medium text-orange-800 mb-2">
@@ -156,54 +212,64 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
                 </div>
               )}
 
-              {/* Patient List */}
               <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
-                {filteredPatients.map((patient) => {
-                  const isSelected = selectedPatients.some((p) => p.id === patient.id)
-                  return (
-                    <button
-                      key={patient.id}
-                      onClick={() => handlePatientToggle(patient)}
-                      className={`w-full p-3 text-left border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors ${
-                        isSelected ? "bg-orange-50 border-orange-200" : ""
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                            isSelected ? "bg-orange-500 border-orange-500" : "border-gray-300"
-                          }`}
-                        >
-                          {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
+                {loadingPatients ? (
+                  <p className="p-3 text-center text-gray-600">Loading patients...</p>
+                ) : error && dateError === null ? (
+                  <p className="p-3 text-center text-red-600">Error: {error}</p>
+                ) : filteredPatients.length === 0 ? (
+                  <p className="p-3 text-center text-gray-600">No patients found</p>
+                ) : (
+                  filteredPatients.map((patient) => {
+                    const isSelected = selectedPatients.some((p) => p.id === patient.id)
+                    return (
+                      <button
+                        key={patient.id}
+                        onClick={() => handlePatientToggle(patient)}
+                        className={`w-full p-3 text-left border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors ${
+                          isSelected ? "bg-orange-50 border-orange-200" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                              isSelected ? "bg-orange-500 border-orange-500" : "border-gray-300"
+                            }`}
+                          >
+                            {isSelected && <div className="w-2 h-2 bg-white rounded-full" />}
+                          </div>
+                          <div className="bg-blue-100 p-2 rounded-full">
+                            <User className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{patient.name}</h4>
+                            <p className="text-sm text-gray-600">
+                              {patient.email || "No email"} • {patient.phone || "No phone"}
+                            </p>
+                          </div>
                         </div>
-                        <div className="bg-blue-100 p-2 rounded-full">
-                          <User className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{patient.name}</h4>
-                          <p className="text-sm text-gray-600">
-                            {patient.email} • {patient.phone}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  )
-                })}
+                      </button>
+                    )
+                  })
+                )}
               </div>
             </div>
 
-            {/* Preferred Dates */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Preferred Appointment Dates</h3>
-
+              {dateError && (
+                <p className="text-red-600 text-sm mb-2">{dateError}</p>
+              )}
+              <p className="text-sm text-gray-600 mb-2">Select one or more future dates for the appointment</p>
               <div className="space-y-3">
                 {preferredDates.map((date, index) => (
-                  <div key={index} className="flex items-center gap-3">
+                  <div key={`${date}-${index}`} className="flex items-center gap-3">
                     <Calendar className="w-4 h-4 text-gray-400" />
                     <input
                       type="date"
                       value={date}
                       min={getMinDate()}
+                      required
                       onChange={(e) => handleDateChange(index, e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     />
@@ -212,7 +278,6 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
                     </button>
                   </div>
                 ))}
-
                 <button
                   onClick={handleDateAdd}
                   className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-400 hover:bg-orange-50 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-orange-600"
@@ -223,7 +288,6 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
               </div>
             </div>
 
-            {/* Message */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Invitation Message (Optional)</h3>
               <textarea
@@ -235,7 +299,6 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
               />
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3 pt-4 border-t border-gray-200">
               <button
                 onClick={onClose}
@@ -246,6 +309,7 @@ export default function InvitePatientModal({ isOpen, onClose, onInvitationSent }
               <button
                 onClick={handleSendInvitations}
                 disabled={selectedPatients.length === 0 || preferredDates.length === 0}
+                title={selectedPatients.length === 0 || preferredDates.length === 0 ? "Select at least one patient and one date" : ""}
                 className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
               >
                 Send Invitations ({selectedPatients.length})

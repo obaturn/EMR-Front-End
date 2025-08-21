@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { X, Calendar, Clock, User, FileText, Plus, Search } from "lucide-react"
-import { mockPatients, getAvailableTimeSlots, formatAppointmentTime } from "../lib/appointment-data"
+import api from "../ApiService/Api"
+import { formatAppointmentTime } from "../lib/appointment-data"
 import type { Patient, Appointment } from "../types/appointment"
 
 interface AppointmentModalProps {
@@ -22,8 +23,11 @@ export default function AppointmentModal({
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [showNewPatientForm, setShowNewPatientForm] = useState(false)
+  const [patients, setPatients] = useState<Patient[]>([])
+  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // Appointment form data
   const [appointmentData, setAppointmentData] = useState({
     time: "",
     duration: 30,
@@ -32,32 +36,60 @@ export default function AppointmentModal({
     symptoms: "",
   })
 
-  // New patient form data
   const [newPatientData, setNewPatientData] = useState({
-    name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     phone: "",
     dateOfBirth: "",
     gender: "Male" as "Male" | "Female" | "Other",
     address: "",
-    emergencyContact: "",
+    emergency_contact: "",
   })
 
-  const availableSlots = getAvailableTimeSlots(selectedDate.toISOString().split("T")[0])
-  const filteredPatients = mockPatients.filter(
-    (patient) =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm),
-  )
+  useEffect(() => {
+    if (step === "patient" && isOpen) {
+      setLoading(true)
+      api
+        .get("/patients/", { params: { search: searchTerm } })
+        .then((res) => {
+          setPatients(res.data)
+          setLoading(false)
+        })
+        .catch((err) => {
+          setError("Failed to load patients")
+          setLoading(false)
+          console.error(err)
+        })
+    }
+  }, [searchTerm, step, isOpen])
+
+  useEffect(() => {
+    if (step === "details" && selectedDate && isOpen) {
+      setLoading(true)
+      api
+        .get("/available-slots/", { params: { date: selectedDate.toISOString().split("T")[0] } })
+        .then((res) => {
+          setAvailableSlots(res.data.available_slots)
+          setLoading(false)
+        })
+        .catch((err) => {
+          setError("Failed to load available slots")
+          setLoading(false)
+          console.error(err)
+        })
+    }
+  }, [selectedDate, step, isOpen])
 
   useEffect(() => {
     if (!isOpen) {
-      // Reset form when modal closes
       setStep("patient")
       setSelectedPatient(null)
       setSearchTerm("")
       setShowNewPatientForm(false)
+      setPatients([])
+      setAvailableSlots([])
+      setError(null)
       setAppointmentData({
         time: "",
         duration: 30,
@@ -66,13 +98,14 @@ export default function AppointmentModal({
         symptoms: "",
       })
       setNewPatientData({
-        name: "",
+        first_name: "",
+        last_name: "",
         email: "",
         phone: "",
         dateOfBirth: "",
         gender: "Male",
         address: "",
-        emergencyContact: "",
+        emergency_contact: "",
       })
     }
   }, [isOpen])
@@ -83,26 +116,42 @@ export default function AppointmentModal({
   }
 
   const handleNewPatientSubmit = () => {
-    // Create a temporary patient object
-    const tempPatient: Patient = {
-      id: `temp-${Date.now()}`,
-      name: newPatientData.name,
-      email: newPatientData.email,
-      phone: newPatientData.phone,
-      dateOfBirth: newPatientData.dateOfBirth,
-      gender: newPatientData.gender,
-      address: newPatientData.address,
-      emergencyContact: newPatientData.emergencyContact,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    if (!newPatientData.first_name || !newPatientData.last_name || !newPatientData.email || !newPatientData.phone) {
+      setError("Please fill in all required fields")
+      return
     }
-
-    setSelectedPatient(tempPatient)
-    setStep("details")
+    setLoading(true)
+    api
+      .post("/add-patient/", newPatientData)
+      .then((res) => {
+        const patient: Patient = {
+          id: res.data.patient.id,
+          name: res.data.patient.name,
+          email: res.data.patient.email,
+          phone: res.data.patient.phone,
+          dateOfBirth: res.data.patient.dateOfBirth,
+          gender: res.data.patient.gender,
+          address: res.data.patient.address,
+          emergencyContact: res.data.patient.emergency_contact,
+          createdAt: res.data.patient.created_at,
+          updatedAt: res.data.patient.updated_at,
+        }
+        setSelectedPatient(patient)
+        setStep("details")
+        setLoading(false)
+      })
+      .catch((err) => {
+        setError(err.response?.data?.error || "Failed to add patient")
+        setLoading(false)
+        console.error(err)
+      })
   }
 
   const handleAppointmentSubmit = () => {
-    if (!selectedPatient || !appointmentData.time) return
+    if (!selectedPatient || !appointmentData.time) {
+      setError("Please select a patient and time slot")
+      return
+    }
 
     const appointment: Omit<Appointment, "id" | "createdAt" | "updatedAt"> = {
       patientId: selectedPatient.id,
@@ -112,7 +161,7 @@ export default function AppointmentModal({
       duration: appointmentData.duration,
       type: appointmentData.type,
       status: "Scheduled",
-      doctorName: "Dr. Akintoye",
+      doctorName: "", // Backend auto-fills with authenticated user
       notes: appointmentData.notes,
       symptoms: appointmentData.symptoms,
     }
@@ -126,7 +175,6 @@ export default function AppointmentModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Calendar className="w-6 h-6 text-white" />
@@ -151,83 +199,84 @@ export default function AppointmentModal({
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+          {loading && <div className="text-center text-gray-600">Loading...</div>}
+          {error && <div className="text-center text-red-600 mb-4">{error}</div>}
+
           {step === "patient" && (
             <div className="space-y-6">
-              {/* Patient Selection */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Patient</h3>
-
-                {/* Search */}
-                <div className="relative mb-4">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search patients by name, email, or phone..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                {/* New Patient Button */}
-                <button
-                  onClick={() => setShowNewPatientForm(!showNewPatientForm)}
-                  className="w-full mb-4 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
-                >
-                  <Plus className="w-5 h-5" />
-                  Add New Patient
-                </button>
-
-                {/* New Patient Form */}
-                {showNewPatientForm && (
-                  <div className="bg-gray-50 rounded-lg p-4 mb-4 space-y-4">
-                    <h4 className="font-medium text-gray-900">New Patient Information</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <input
-                        type="text"
-                        placeholder="Full Name *"
-                        value={newPatientData.name}
-                        onChange={(e) => setNewPatientData((prev) => ({ ...prev, name: e.target.value }))}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                      <input
-                        type="email"
-                        placeholder="Email *"
-                        value={newPatientData.email}
-                        onChange={(e) => setNewPatientData((prev) => ({ ...prev, email: e.target.value }))}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                      <input
-                        type="tel"
-                        placeholder="Phone Number *"
-                        value={newPatientData.phone}
-                        onChange={(e) => setNewPatientData((prev) => ({ ...prev, phone: e.target.value }))}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                      <input
-                        type="date"
-                        placeholder="Date of Birth"
-                        value={newPatientData.dateOfBirth}
-                        onChange={(e) => setNewPatientData((prev) => ({ ...prev, dateOfBirth: e.target.value }))}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                      <select
-                        value={newPatientData.gender}
-                        onChange={(e) => setNewPatientData((prev) => ({ ...prev, gender: e.target.value as any }))}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      >
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      <input
-                        type="text"
-                        placeholder="Emergency Contact"
-                        value={newPatientData.emergencyContact}
-                        onChange={(e) => setNewPatientData((prev) => ({ ...prev, emergencyContact: e.target.value }))}
-                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Patient</h3>
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search patients by name, email, or phone..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <button
+                onClick={() => setShowNewPatientForm(!showNewPatientForm)}
+                className="w-full mb-4 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600"
+              >
+                <Plus className="w-5 h-5" />
+                Add New Patient
+              </button>
+              {showNewPatientForm && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-4 space-y-4">
+                  <h4 className="font-medium text-gray-900">New Patient Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="First Name *"
+                      value={newPatientData.first_name}
+                      onChange={(e) => setNewPatientData((prev) => ({ ...prev, first_name: e.target.value }))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Last Name *"
+                      value={newPatientData.last_name}
+                      onChange={(e) => setNewPatientData((prev) => ({ ...prev, last_name: e.target.value }))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email *"
+                      value={newPatientData.email}
+                      onChange={(e) => setNewPatientData((prev) => ({ ...prev, email: e.target.value }))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone Number *"
+                      value={newPatientData.phone}
+                      onChange={(e) => setNewPatientData((prev) => ({ ...prev, phone: e.target.value }))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <input
+                      type="date"
+                      placeholder="Date of Birth"
+                      value={newPatientData.dateOfBirth}
+                      onChange={(e) => setNewPatientData((prev) => ({ ...prev, dateOfBirth: e.target.value }))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <select
+                      value={newPatientData.gender}
+                      onChange={(e) => setNewPatientData((prev) => ({ ...prev, gender: e.target.value as any }))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <input
+                      type="text"
+                      placeholder="Emergency Contact"
+                      value={newPatientData.emergency_contact}
+                      onChange={(e) => setNewPatientData((prev) => ({ ...prev, emergency_contact: e.target.value }))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
                     <input
                       type="text"
                       placeholder="Address"
@@ -235,45 +284,42 @@ export default function AppointmentModal({
                       onChange={(e) => setNewPatientData((prev) => ({ ...prev, address: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
-                    <button
-                      onClick={handleNewPatientSubmit}
-                      disabled={!newPatientData.name || !newPatientData.email || !newPatientData.phone}
-                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Continue with New Patient
-                    </button>
                   </div>
-                )}
-
-                {/* Existing Patients List */}
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {filteredPatients.map((patient) => (
-                    <button
-                      key={patient.id}
-                      onClick={() => handlePatientSelect(patient)}
-                      className="w-full p-4 text-left border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 p-2 rounded-full">
-                          <User className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{patient.name}</h4>
-                          <p className="text-sm text-gray-600">
-                            {patient.email} • {patient.phone}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                  <button
+                    onClick={handleNewPatientSubmit}
+                    disabled={!newPatientData.first_name || !newPatientData.last_name || !newPatientData.email || !newPatientData.phone}
+                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Continue with New Patient
+                  </button>
                 </div>
+              )}
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {patients.map((patient) => (
+                  <button
+                    key={patient.id}
+                    onClick={() => handlePatientSelect(patient)}
+                    className="w-full p-4 text-left border border-gray-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="bg-blue-100 p-2 rounded-full">
+                        <User className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{patient.name}</h4>
+                        <p className="text-sm text-gray-600">
+                          {patient.email} • {patient.phone}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           )}
 
           {step === "details" && selectedPatient && (
             <div className="space-y-6">
-              {/* Selected Patient Info */}
               <div className="bg-blue-50 rounded-lg p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Selected Patient</h3>
                 <div className="flex items-center gap-3">
@@ -292,11 +338,8 @@ export default function AppointmentModal({
                 </button>
               </div>
 
-              {/* Appointment Details */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900">Appointment Details</h3>
-
-                {/* Time Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Clock className="w-4 h-4 inline mr-1" />
@@ -318,8 +361,6 @@ export default function AppointmentModal({
                     ))}
                   </div>
                 </div>
-
-                {/* Duration and Type */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
@@ -337,7 +378,6 @@ export default function AppointmentModal({
                       <option value={90}>1.5 hours</option>
                     </select>
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Appointment Type</label>
                     <select
@@ -356,8 +396,6 @@ export default function AppointmentModal({
                     </select>
                   </div>
                 </div>
-
-                {/* Symptoms */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <FileText className="w-4 h-4 inline mr-1" />
@@ -371,8 +409,6 @@ export default function AppointmentModal({
                     placeholder="Describe patient's symptoms..."
                   />
                 </div>
-
-                {/* Notes */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
                   <textarea
@@ -384,8 +420,6 @@ export default function AppointmentModal({
                   />
                 </div>
               </div>
-
-              {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={() => setStep("patient")}

@@ -1,30 +1,30 @@
 export interface Patient {
-  id: string
-  name: string
-  email: string
-  phone: string
-  dateOfBirth: string
-  gender: "Male" | "Female" | "Other"
-  address: string
-  emergencyContact: string
+  id: number // Changed to number to match AddPatientSerializer
+  name: string // first_name + last_name from AddPatientSerializer
+  email?: string // Optional, as per AddPatients model
+  phone?: string // Optional, as per AddPatients model
+  dateOfBirth?: string
+  gender?: "Male" | "Female" | "Other"
+  address?: string
+  emergencyContact?: string
   medicalHistory?: string
   allergies?: string
   currentMedications?: string
   insuranceProvider?: string
   insuranceNumber?: string
-  createdAt: string
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Appointment {
-  id: string
-  patientId: string
+  id: number
+  patientId: number
   patient: Patient
   date: string // ISO date string
   time: string // HH:MM format
   duration: number // minutes
   type: "Consultation" | "Follow-up" | "Emergency" | "Routine Check" | "Surgery" | "Lab Test"
-  status: "Scheduled" | "Confirmed" | "In Progress" | "Completed" | "Cancelled" | "No Show"
+  status: "Scheduled" | "Confirmed" | "In Progress" | "Completed" | "Cancelled"
   doctorName: string
   notes?: string
   symptoms?: string
@@ -37,7 +37,7 @@ export interface Appointment {
 export interface AppointmentSlot {
   time: string
   available: boolean
-  appointmentId?: string
+  appointmentId?: number
 }
 
 export interface DaySchedule {
@@ -47,8 +47,8 @@ export interface DaySchedule {
 }
 
 export interface InvitationStatus {
-  id: string
-  patientId: string
+  id: number
+  patientId: number
   patient: Patient
   invitedDate: string
   preferredDates: string[]

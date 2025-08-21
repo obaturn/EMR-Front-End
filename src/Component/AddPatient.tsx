@@ -1,14 +1,36 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { User, Mail, Phone, Calendar, MapPin, CreditCard, FileText, Users } from "lucide-react"
+import { toast ,ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+
+type FormData = {
+  first_name: string
+  last_name: string
+  email: string
+  phone: string
+  dob: string
+  age: string
+  gender: string
+  address: string
+  city: string
+  pincode: string
+  aadhaar: string
+  remarks: string
+  category: string
+}
+
+type FormErrors = Record<string, string>
 
 export default function AddPatient() {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+  const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(true)
+  const [userRole, setUserRole] = useState<string | null>(null)
+  const [formData, setFormData] = useState<FormData>({
+    first_name: "",
+    last_name: "",
     email: "",
     phone: "",
     dob: "",
@@ -21,47 +43,73 @@ export default function AddPatient() {
     remarks: "",
     category: "General",
   })
+  const [errors, setErrors] = useState<FormErrors>({})
 
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  useEffect(() => {
+    // Simulate loading user data
+    const timer = setTimeout(() => {
+      const role = localStorage.getItem('userRole') // Get from your auth system
+      setUserRole(role)
+      setIsLoading(false)
+    }, 1000)
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setErrors(prev => ({ ...prev, [field]: "" }))
     }
   }
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!formData.firstName.trim()) newErrors.firstName = "First name is required"
-    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required"
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {}
+    
+    if (!formData.first_name.trim()) newErrors.first_name = "First name is required"
+    if (!formData.last_name.trim()) newErrors.last_name = "Last name is required"
     if (!formData.email.trim()) newErrors.email = "Email is required"
     if (!formData.phone.trim()) newErrors.phone = "Phone number is required"
-    if (!formData.dob) newErrors.dob = "Date of birth is required"
+    if (!formData.dob.trim()) newErrors.dob = "Date of birth is required"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (validateForm()) {
-      const storedPatients = JSON.parse(localStorage.getItem("patients") || "[]")
+    
+    if (!validateForm()) return
 
-      // Add the new patient to the list
-      storedPatients.push(formData)
+    try {
+      const token = localStorage.getItem('accessToken')
+      const response = await fetch("http://127.0.0.1:8000/api/add-patient/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(formData),
+      })
 
-      // Save back to localStorage
-      localStorage.setItem("patients", JSON.stringify(storedPatients))
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("You don't have permission to add patients")
+        }
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Role Pharmacy Is Aunthorized to save patient")
+      }
 
-      console.log("Patient saved:", formData)
-
-      // Optionally reset the form
+      const data = await response.json()
+      console.log('Patient data:', data) // Example usage
+// Or use it in your toast message:
+      toast.success(`Patient ${data.first_name} ${data.last_name} added successfully!`)
+      toast.success("Patient added successfully!")
+      
+      // Reset form
       setFormData({
-        firstName: "",
-        lastName: "",
+        first_name: "",
+        last_name: "",
         email: "",
         phone: "",
         dob: "",
@@ -74,13 +122,53 @@ export default function AddPatient() {
         remarks: "",
         category: "General",
       })
-      console.log("Form submitted:", formData)
-      // Handle form submission here
+      
+      navigate("/admin/patients")
+    } catch (error) {
+      console.error("Error:", error)
+      toast.error(error instanceof Error ? error.message : "An error occurred")
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-gray-700">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (userRole === 'pharmacy') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-8 px-4 flex items-center justify-center">
+        <div className="max-w-md bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+            <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Permission Denied</h2>
+          <p className="text-gray-600 mb-6">
+            Pharmacy accounts cannot add patients. Please contact a doctor or nurse to add patients.
+          </p>
+          <button
+            onClick={() => navigate(-1)}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-8 px-4">
+      <ToastContainer position="top-right" autoClose={5000} />
+      
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -111,28 +199,28 @@ export default function AddPatient() {
                   <label className="text-sm font-medium text-gray-700">First Name *</label>
                   <input
                     type="text"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange("firstName", e.target.value)}
+                    value={formData.first_name}
+                    onChange={(e) => handleInputChange("first_name", e.target.value)}
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.firstName ? "border-red-500 bg-red-50" : "border-gray-300"
+                      errors.first_name ? "border-red-500 bg-red-50" : "border-gray-300"
                     }`}
                     placeholder="Enter first name"
                   />
-                  {errors.firstName && <p className="text-sm text-red-600">{errors.firstName}</p>}
+                  {errors.first_name && <p className="text-sm text-red-600">{errors.first_name}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Last Name *</label>
                   <input
                     type="text"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange("lastName", e.target.value)}
+                    value={formData.last_name}
+                    onChange={(e) => handleInputChange("last_name", e.target.value)}
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.lastName ? "border-red-500 bg-red-50" : "border-gray-300"
+                      errors.last_name ? "border-red-500 bg-red-50" : "border-gray-300"
                     }`}
                     placeholder="Enter last name"
                   />
-                  {errors.lastName && <p className="text-sm text-red-600">{errors.lastName}</p>}
+                  {errors.last_name && <p className="text-sm text-red-600">{errors.last_name}</p>}
                 </div>
               </div>
 
@@ -323,6 +411,7 @@ export default function AddPatient() {
             <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200">
               <button
                 type="button"
+                onClick={() => navigate(-1)}
                 className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors font-medium"
               >
                 Cancel
