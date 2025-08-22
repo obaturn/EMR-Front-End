@@ -3,7 +3,7 @@ import api from './Api';
 
 // Define interfaces for your patient data
 export interface Patient {
-  id?: number;
+  id: number;
   first_name: string;
   last_name: string;
   date_of_birth: Date;  // Changed from string to Date
