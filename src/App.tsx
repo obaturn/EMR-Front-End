@@ -11,6 +11,7 @@ import { AddPatientView } from "./Component/AddPatientView"
 import AddPatient from "./Component/AddPatient"
 import ReportsPage from "./Component/ReportPages"
 import ProfilePage from "./Component/ProfilePage"
+import DiagnosticsPage from "./Component/DiagnosticsPage"
 
 function App() {
   return (
@@ -50,6 +51,9 @@ function App() {
         <Route path="/nurse/profile" element={<ProfilePage userRole="nurse" userName="Nurse" />} />
         <Route path="/pharmacy/profile" element={<ProfilePage userRole="pharmacy" userName="Pharmacist" />} />
 
+        <Route path="/admin/diagnostics" element={<DiagnosticsPage userRole="admin" userName="Admin" />} />
+        <Route path="/doctor/diagnostics" element={<DiagnosticsPage userRole="doctor" userName="Dr. Akintoye" />} />
+        <Route path="/nurse/diagnostics" element={<DiagnosticsPage userRole="nurse" userName="Nurse" />} />
         {/* Add more role-specific routes as needed */}
       </Routes>
     </Router>

@@ -47,6 +47,29 @@ export interface AppointmentCreateData {
   notes?: string;
   diagnosis?: string;
 }
+export interface Diagnostic {
+  id: number
+  patient_id: number
+  patient_name: string
+  test_type: string
+  result: string
+  date: string
+  notes: string
+  status: 'pending' | 'completed' | 'abnormal'
+  created_by: number | null
+  created_by_name: string
+  created_at: string
+  updated_at: string
+}
+
+export interface DiagnosticCreateData {
+  patient: number
+  test_type: string
+  result: string
+  date: string
+  notes: string
+  status: 'pending' | 'completed' | 'abnormal'
+}
 
 export interface AppointmentSlot {
   time: string;
