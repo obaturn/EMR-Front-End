@@ -147,11 +147,6 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId, userName, userRol
     setNewMessage('')
   }
 
-  const markAsRead = (messageId: string) => {
-    if (socket) {
-      socket.emit('markAsRead', messageId)
-    }
-  }
 
   const filteredMessages = selectedRecipient
     ? messages.filter(msg =>

@@ -414,9 +414,16 @@ const DashboardContent = ({
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Good Morning, <span className="text-orange-500">{displayName}</span>
-            </h2>
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Good Morning, <span className="text-orange-500">{displayName}</span>
+              </h2>
+              {unreadMessageCount > 0 && (
+                <div className="bg-red-500 text-white text-xs rounded-full h-5 px-2 flex items-center justify-center font-medium">
+                  {unreadMessageCount > 99 ? '99+' : unreadMessageCount} unread
+                </div>
+              )}
+            </div>
             <p className="text-gray-600">Have a nice day at work</p>
             {specialty && <p className="text-sm text-gray-500 mt-1">{specialty}</p>}
           </div>
