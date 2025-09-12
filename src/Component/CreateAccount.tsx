@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-type UserRole = "doctor" | "nurse" | "pharmacy" | ""
+type UserRole = "doctor" | "nurse" | "pharmacy" | "patient" | ""
 
 interface RoleConfig {
   title: string
@@ -113,6 +113,23 @@ const roleConfigs: Record<Exclude<UserRole, "">, RoleConfig> = {
       "Surgical Pharmacy",
     ],
   },
+  patient: {
+    title: "Patient",
+    nameLabel: "Patient Name",
+    specialtyLabel: "Medical Condition",
+    specialties: [
+      "General Checkup",
+      "Cardiac Care",
+      "Dental Care",
+      "Orthopedic Care",
+      "Mental Health",
+      "Maternity Care",
+      "Pediatric Care",
+      "Oncology Care",
+      "Emergency Care",
+      "Chronic Disease Management",
+    ],
+  },
 }
 
 export default function CreateAccount() {
@@ -195,9 +212,10 @@ export default function CreateAccount() {
 
       // Navigate based on role
       const dashboardRoute =
-        role === "doctor" ? "/admin/dashboard" : 
-        role === "nurse" ? "/nurse/dashboard" : 
-        "/pharmacy/dashboard";
+        role === "doctor" ? "/admin/dashboard" :
+        role === "nurse" ? "/nurse/dashboard" :
+        role === "pharmacy" ? "/pharmacy/dashboard" :
+        "/patient/dashboard";
 
       navigate(dashboardRoute, {
         state: {
@@ -253,6 +271,7 @@ export default function CreateAccount() {
                 <option value="doctor">Doctor</option>
                 <option value="nurse">Nurse</option>
                 <option value="pharmacy">Pharmacist</option>
+                <option value="patient">Patient</option>
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -296,8 +315,8 @@ export default function CreateAccount() {
                   </div>
                 </div>
 
-                {/* License Number for Doctors and Nurses */}
-                {role !== "pharmacy" && (
+                {/* License Number for Doctors, Nurses, and Pharmacists (not for Patients) */}
+                {role !== "pharmacy" && role !== "patient" && (
                   <input
                     className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
                     type="text"

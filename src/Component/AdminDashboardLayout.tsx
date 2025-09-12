@@ -7,6 +7,8 @@ interface DashboardLayoutProps {
   userName?: string
   userRole?: string
   specialty?: string
+  onChatClick?: () => void
+  unreadMessageCount?: number
 }
 
 const DashboardLayout = ({
@@ -14,10 +16,12 @@ const DashboardLayout = ({
   userName = "User",
   userRole = "doctor",
   specialty = "",
+  onChatClick,
+  unreadMessageCount = 0,
 }: DashboardLayoutProps) => {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <SidebarAdmin userRole={userRole} />
+      <SidebarAdmin userRole={userRole} onChatClick={onChatClick} unreadMessageCount={unreadMessageCount} />
 
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top Bar */}

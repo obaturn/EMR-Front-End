@@ -13,6 +13,7 @@ import ReportsPage from "./Component/ReportPages"
 import ProfilePage from "./Component/ProfilePage"
 import DiagnosticsPage from "./Component/DiagnosticsPage"
 import LabReport from "./Component/LabResult"
+import ChatPage from "./Component/ChatPage"
 
 function App() {
   return (
@@ -29,10 +30,12 @@ function App() {
         <Route path="/doctor/dashboard" element={<DashboardPage />} />
         <Route path="/nurse/dashboard" element={<DashboardPage />} />
         <Route path="/pharmacy/dashboard" element={<DashboardPage />} />
+        <Route path="/patient/dashboard" element={<DashboardPage />} />
         <Route path="/admin/patients" element={<AddPatientView />} />
-       <Route path="/doctor/patients" element={<AddPatientView />} />
+        <Route path="/doctor/patients" element={<AddPatientView />} />
         <Route path="/nurse/patients" element={<AddPatientView />} />
         <Route path="/pharmacy/patients" element={<AddPatientView />} />
+        <Route path="/patient/patients" element={<AddPatientView />} />
         <Route path = "/admin/add-patient" element={<AddPatient />}/>
 
         {/* Calendar routes for all roles */}
@@ -40,17 +43,20 @@ function App() {
         <Route path="/doctor/calendar" element={<CalenderPage />} />
         <Route path="/nurse/calendar" element={<CalenderPage />} />
         <Route path="/pharmacy/calendar" element={<CalenderPage />} />
+        <Route path="/patient/calendar" element={<CalenderPage />} />
 
         {/* Reports routes for all roles */}
         <Route path="/admin/reports" element={<ReportsPage userRole="admin" userName="Admin" />} />
         <Route path="/doctor/reports" element={<ReportsPage userRole="doctor" userName="Dr. Akintoye" />} />
         <Route path="/nurse/reports" element={<ReportsPage userRole="nurse" userName="Nurse" />} />
         <Route path="/pharmacy/reports" element={<ReportsPage userRole="pharmacy" userName="Pharmacist" />} />
+        <Route path="/patient/reports" element={<ReportsPage userRole="patient" userName="Patient" />} />
 
         <Route path="/admin/profile" element={<ProfilePage userRole="admin" userName="Admin" />} />
         <Route path="/doctor/profile" element={<ProfilePage userRole="doctor" userName="Dr. Akintoye" />} />
         <Route path="/nurse/profile" element={<ProfilePage userRole="nurse" userName="Nurse" />} />
         <Route path="/pharmacy/profile" element={<ProfilePage userRole="pharmacy" userName="Pharmacist" />} />
+        <Route path="/patient/profile" element={<ProfilePage userRole="patient" userName="Patient" />} />
 
         <Route path="/admin/diagnostics" element={<DiagnosticsPage userRole="admin" userName="Admin" />} />
         <Route path="/doctor/diagnostics" element={<DiagnosticsPage userRole="doctor" userName="Dr. Akintoye" />} />
@@ -59,6 +65,13 @@ function App() {
         <Route path="/admin/lab" element={<LabReport userRole="admin" userName="Admin" />} />
         <Route path="/doctor/lab" element={<LabReport userRole="doctor" userName="Dr.Akintoye"/>} />
         <Route path="/nurse/lab" element={<LabReport userRole="nurse" userName="Nurse"/>} />
+
+        {/* Chat routes for all roles */}
+        <Route path="/admin/chat" element={<ChatPage />} />
+        <Route path="/doctor/chat" element={<ChatPage />} />
+        <Route path="/nurse/chat" element={<ChatPage />} />
+        <Route path="/pharmacy/chat" element={<ChatPage />} />
+        <Route path="/patient/chat" element={<ChatPage />} />
         {/* Add more role-specific routes as needed */}
       </Routes>
     </Router>
