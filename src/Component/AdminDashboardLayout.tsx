@@ -19,9 +19,15 @@ const DashboardLayout = ({
   onChatClick,
   unreadMessageCount = 0,
 }: DashboardLayoutProps) => {
+
+
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <SidebarAdmin userRole={userRole} onChatClick={onChatClick} unreadMessageCount={unreadMessageCount} />
+      <SidebarAdmin
+        userRole={userRole}
+        onChatClick={onChatClick}
+        unreadMessageCount={unreadMessageCount}
+      />
 
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top Bar */}
@@ -30,6 +36,7 @@ const DashboardLayout = ({
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto bg-gray-50">{children}</main>
       </div>
+
     </div>
   )
 }

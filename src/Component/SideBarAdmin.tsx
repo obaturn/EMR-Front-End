@@ -13,6 +13,8 @@ import {
   FaPills,
   FaUserNurse,
   FaHeart,
+  FaProjectDiagram,
+  FaChartBar,
 } from "react-icons/fa"
 import { NavLink } from "react-router-dom"
 import { useState, useEffect } from "react"
@@ -52,6 +54,22 @@ const SidebarAdmin = ({ userRole = "doctor", onChatClick, unreadMessageCount = 0
     { to: `/${userRole}/profile`, icon: FaUser, label: "Profile", isChat: false },
   ]
 
+  // Workflow menu item
+  const workflowMenuItem: MenuItem = {
+    to: `/${userRole}/workflow`,
+    icon: FaProjectDiagram,
+    label: "Workflow",
+    isChat: false
+  }
+
+  // Analytics menu item
+  const analyticsMenuItem: MenuItem = {
+    to: `/${userRole}/analytics`,
+    icon: FaChartBar,
+    label: "Analytics",
+    isChat: false
+  }
+
   
   const roleSpecificItems: Record<string, MenuItem[]> = {
     doctor: [
@@ -59,31 +77,37 @@ const SidebarAdmin = ({ userRole = "doctor", onChatClick, unreadMessageCount = 0
       { to: "/doctor/lab", icon: FaFlask, label: "Lab Results", isChat: false },
       { to: "/doctor/workspace", icon: FaBriefcase, label: "Workspace", isChat: false },
       { to: "/doctor/health-promotion", icon: FaLifeRing, label: "Health Promotion", isChat: false },
+      { to: `/${userRole}/feedback`, icon: FaComments, label: "Feedback", isChat: false },
+      { to: `/${userRole}/support`, icon: FaLifeRing, label: "Support", isChat: false },
     ],
     nurse: [
       { to: "/nurse/patient-care", icon: FaUserNurse, label: "Patient Care", isChat: false },
       { to: "/nurse/medications", icon: FaPills, label: "Medications", isChat: false },
       { to: "/nurse/vitals", icon: FaHeart, label: "Vital Signs", isChat: false },
       { to: "/nurse/ward-management", icon: FaBriefcase, label: "Ward Management", isChat: false },
+      { to: `/${userRole}/feedback`, icon: FaComments, label: "Feedback", isChat: false },
+      { to: `/${userRole}/support`, icon: FaLifeRing, label: "Support", isChat: false },
     ],
     pharmacy: [
       { to: "/pharmacy/prescriptions", icon: FaPills, label: "Prescriptions", isChat: false },
       { to: "/pharmacy/inventory", icon: FaBoxes, label: "Inventory", isChat: false },
       { to: "/pharmacy/dispensing", icon: FaFlask, label: "Dispensing", isChat: false },
       { to: "/pharmacy/drug-info", icon: FaFileAlt, label: "Drug Information", isChat: false },
+      { to: `/${userRole}/feedback`, icon: FaComments, label: "Feedback", isChat: false },
+      { to: `/${userRole}/support`, icon: FaLifeRing, label: "Support", isChat: false },
     ],
   }
 
   // Common items for all roles
   const commonItems: MenuItem[] = [
-    { to: `/${userRole}/feedbacks`, icon: FaComments, label: "Feedbacks", isChat: false },
-    { to: `/${userRole}/support`, icon: FaLifeRing, label: "Support", isChat: false },
     { to: `/${userRole}/chat`, icon: FaComments, label: "Chat", isChat: true },
   ]
 
   // Combine menu items based on role
   const menuItems: MenuItem[] = [
     ...baseMenuItems,
+    workflowMenuItem,
+    analyticsMenuItem,
     ...(roleSpecificItems[userRole as keyof typeof roleSpecificItems] || []),
     ...commonItems,
   ]

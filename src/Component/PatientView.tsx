@@ -563,6 +563,13 @@ export const PatientView = () => {
                           <FaHistory className="w-4 h-4" />
                           {selectedPatientId === patient.id ? "Hide" : "History"}
                         </button>
+                        <button
+                          onClick={() => navigate(`/doctor/ehr/${patient.id}`)}
+                          className="flex-1 lg:flex-none px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all transform hover:scale-105 shadow-md flex items-center justify-center gap-2"
+                        >
+                          <FaUser className="w-4 h-4" />
+                          EHR
+                        </button>
                       </div>
                     </div>
 
