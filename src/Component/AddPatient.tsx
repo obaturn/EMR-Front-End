@@ -83,7 +83,7 @@ export default function AddPatient() {
 
     try {
       const token = localStorage.getItem('accessToken')
-      const response = await fetch("http://127.0.0.1:8000/api/add-patient/", {
+      const response = await fetch("https://emr-backend-f7k2.onrender.com/api/add-patient/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

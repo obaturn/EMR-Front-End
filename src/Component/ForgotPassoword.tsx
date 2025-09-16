@@ -36,7 +36,7 @@ export default function ForgotPassword() {
     setIsLoading(true)
 
     try {
-      await axios.post('http://localhost:8000/api/auth/forgot-password/', { email: email.trim() })
+      await axios.post('https://emr-backend-f7k2.onrender.com/api/auth/forgot-password/', { email: email.trim() })
       setSuccess(true)
       localStorage.setItem('resetEmail', email.trim())
 

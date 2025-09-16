@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/',
+  baseURL: 'https://emr-backend-f7k2.onrender.com/api/',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -29,7 +29,7 @@ api.interceptors.response.use(
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
-        const response = await axios.post('http://localhost:8000/api/token/refresh/', {
+        const response = await axios.post('https://emr-backend-f7k2.onrender.com/api/token/refresh/', {
           refresh: refreshToken,
         });
         const newAccessToken = response.data.access;

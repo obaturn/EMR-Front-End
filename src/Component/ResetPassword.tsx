@@ -73,7 +73,7 @@ export default function ResetPassword() {
     setIsLoading(true);
 
     try {
-      await axios.post('http://localhost:8000/api/auth/reset-password/', {
+      await axios.post('https://emr-backend-f7k2.onrender.com/api/auth/reset-password/', {
         email,
         otp_code: otpString,
         new_password: password,
