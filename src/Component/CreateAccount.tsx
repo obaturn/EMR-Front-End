@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { Eye, EyeOff } from "lucide-react"
 
 type UserRole = "doctor" | "nurse" | "pharmacy" | "patient" | ""
 
@@ -143,10 +144,24 @@ export default function CreateAccount() {
   const [licenseNumber, setLicenseNumber] = useState("")
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState<Country>(countries[0])
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showRules, setShowRules] = useState(false)
 
   const navigate = useNavigate()
 
   const currentConfig = role ? roleConfigs[role] : null
+
+  const togglePassword = () => setShowPassword(!showPassword)
+  const toggleConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword)
+
+  const rules = [
+    { label: "At least 8 characters", valid: password.length >= 8 },
+    { label: "One uppercase letter", valid: /[A-Z]/.test(password) },
+    { label: "One lowercase letter", valid: /[a-z]/.test(password) },
+    { label: "One number", valid: /[0-9]/.test(password) },
+    { label: "One special character (!@#$%^&*)", valid: /[!@#$%^&*]/.test(password) },
+  ]
 
   
   const handleRoleChange = (newRole: UserRole) => {
@@ -392,28 +407,67 @@ export default function CreateAccount() {
               </div>
             </div>
 
-            <input
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
-            <div>
+            {/* Password Input with Eye Toggle */}
+            <div className="relative">
               <input
-                className={`w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 ${
+                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => setShowRules(true)}
+                onFocus={() => setShowRules(false)}
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                onClick={(e) => {
+                  e.preventDefault()
+                  togglePassword()
+                }}
+                onMouseDown={(e) => e.preventDefault()}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            {/* Password Rules */}
+            {showRules && (
+              <ul className="text-sm text-left mb-3 space-y-1">
+                {rules.map((rule, idx) => (
+                  <li key={idx} className={rule.valid ? "text-green-600" : "text-red-500"}>
+                    {rule.valid ? "✔" : "✘"} {rule.label}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Confirm Password Input with Eye Toggle */}
+            <div className="relative">
+              <input
+                className={`w-full px-4 py-2 pr-10 border rounded focus:outline-none focus:ring-2 ${
                   showPasswordError ? "border-red-300 focus:ring-red-400" : "border-gray-300 focus:ring-orange-400"
                 }`}
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
-              {showPasswordError && <p className="text-red-500 text-sm mt-1">Passwords do not match</p>}
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                onClick={(e) => {
+                  e.preventDefault()
+                  toggleConfirmPassword()
+                }}
+                onMouseDown={(e) => e.preventDefault()}
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
+            {showPasswordError && <p className="text-red-500 text-sm mt-1">Passwords do not match</p>}
 
             <div className="flex items-center">
               <input

@@ -3,48 +3,49 @@
 import type React from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeft, Smartphone, AlertCircle } from "lucide-react"
+import { ArrowLeft, Mail, AlertCircle } from "lucide-react"
+
+import axios from "axios"
 
 export default function ForgotPassword() {
-  const [mobileNumber, setMobileNumber] = useState("")
+  const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
   const navigate = useNavigate()
 
-  const validateMobileNumber = (number: string) => {
-    // Basic mobile number validation (adjust regex based on your requirements)
-    const mobileRegex = /^[+]?[\d\s\-()]{10,}$/
-    return mobileRegex.test(number.trim())
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email.trim())
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
-    if (!mobileNumber.trim()) {
-      setError("Please enter your mobile number")
+    if (!email.trim()) {
+      setError("Please enter your email address")
       return
     }
 
-    if (!validateMobileNumber(mobileNumber)) {
-      setError("Please enter a valid mobile number")
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address")
       return
     }
 
     setIsLoading(true)
 
-    // Simulate API call
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await axios.post('http://localhost:8000/api/auth/forgot-password/', { email: email.trim() })
       setSuccess(true)
+      localStorage.setItem('resetEmail', email.trim())
 
       // Navigate after showing success message
       setTimeout(() => {
         navigate("/reset-password")
       }, 2000)
-    } catch (err) {
-      setError("Something went wrong. Please try again.")
+    } catch (err: any) {
+      setError(err.response?.data?.email?.[0] || err.response?.data?.message || "Something went wrong. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -60,12 +61,12 @@ export default function ForgotPassword() {
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
           <div className="text-center space-y-4">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-              <Smartphone className="w-8 h-8 text-green-600" />
+              <Mail className="w-8 h-8 text-green-600" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Reset Link Sent!</h2>
+              <h2 className="text-xl font-semibold text-gray-900">OTP Sent!</h2>
               <p className="text-gray-600 mt-2 text-sm">
-                A password reset link has been sent to your mobile number. Please check your messages.
+                A password reset OTP has been sent to your email address. Please check your email.
               </p>
             </div>
             <div className="flex items-center justify-center space-x-2">
@@ -123,7 +124,7 @@ export default function ForgotPassword() {
                 </div>
               </div>
               <p className="text-sm sm:text-base text-gray-600 ml-10">
-                Enter your mobile number and we'll send you a link to reset your password.
+                Enter your email address and we'll send you an OTP to reset your password.
               </p>
             </div>
 
@@ -131,18 +132,18 @@ export default function ForgotPassword() {
             <div className="px-6 pb-6 space-y-4">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="mobile" className="block text-sm font-medium text-gray-700">
-                    Mobile Number
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Email Address
                   </label>
                   <input
-                    id="mobile"
-                    type="tel"
-                    placeholder="Enter your mobile number"
-                    value={mobileNumber}
-                    onChange={(e) => setMobileNumber(e.target.value)}
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full h-11 px-3 py-2 text-base border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors"
                     disabled={isLoading}
-                    autoComplete="tel"
+                    autoComplete="email"
                   />
                 </div>
 
@@ -164,7 +165,7 @@ export default function ForgotPassword() {
                       <span>Sending...</span>
                     </>
                   ) : (
-                    <span>Send Reset Link</span>
+                    <span>Send OTP</span>
                   )}
                 </button>
               </form>
