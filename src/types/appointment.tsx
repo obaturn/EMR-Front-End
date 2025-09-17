@@ -27,7 +27,7 @@ export interface Appointment {
   time: string; // HH:MM format (e.g., "14:00")
   duration: number; // minutes
   type: "Consultation" | "Follow-up" | "Emergency" | "Routine Check" | "Surgery" | "Lab Test";
-  status: "Scheduled" | "Confirmed" | "In Progress" | "Completed" | "Cancelled";
+  status: "Scheduled" | "Confirmed" | "In Progress" | "Completed" | "Cancelled" | "No Show";
   doctorName: string;
   notes?: string;
   symptoms?: string;

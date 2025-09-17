@@ -427,7 +427,7 @@ export const PatientView = () => {
                             <div>
                               <p className="text-xs text-gray-500 font-medium">Age & Gender</p>
                               <p className="text-sm font-semibold text-gray-900">
-                                {patient.age || calculateAge(patient.dateOfBirth!)} years, {patient.gender || "N/A"}
+                                {patient.age || calculateAge(new Date(patient.dateOfBirth!))} years, {patient.gender || "N/A"}
                               </p>
                             </div>
                           </div>
