@@ -1,22 +1,24 @@
 
 
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
+    <div className="min-h-screen bg-black text-white font-sans m-0 p-0">
       {/* Navigation Bar */}
-      <nav className="bg-black text-white p-4">
-        <div className="container mx-auto flex items-center justify-between">
+      <nav className="bg-black text-white p-4 relative">
+        <div className="w-full flex items-center justify-between px-4">
           {/* Logo */}
           <div className="flex items-center">
             <span className="text-orange-500 font-bold text-xl">OBT</span>
             <span className="ml-1 text-white text-xl">.Clinic</span>
           </div>
 
-          {/* Navigation Links and Button */}
-          <div className="flex items-center space-x-6">
+          {/* Navigation Links and Button - inline for large, hidden for small */}
+          <div className="hidden md:flex items-center space-x-6">
             <a href="#" className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors">Docs</a>
             <a href="#" className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors">Pricing</a>
             <button onClick={() => navigate("/about-us")} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors">About Us</button>
@@ -27,14 +29,36 @@ const LandingPage = () => {
               START CONSULTING
             </button>
           </div>
+
+          {/* Hamburger button for small screens */}
+          <button className="md:hidden text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Dropdown for small screens */}
+        <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} absolute top-full left-0 right-0 bg-black p-4 z-10`}>
+          <div className="flex flex-col space-y-4">
+            <a href="#" className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors" onClick={() => setIsMenuOpen(false)}>Docs</a>
+            <a href="#" className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors" onClick={() => setIsMenuOpen(false)}>Pricing</a>
+            <button onClick={() => { navigate("/about-us"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors">About Us</button>
+            <button onClick={() => { navigate("/learn-more"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors">Learn More</button>
+            <button onClick={() => { navigate("/contact-us"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors">Contact Us</button>
+            <button onClick={() => { navigate("/login"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors" aria-label="Login to your account">LOGIN TO ACCOUNT</button>
+            <button onClick={() => { navigate("/start"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm" aria-label="Go to start page">
+              START CONSULTING
+            </button>
+          </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <div className="container mx-auto mt-0 px-4 md:px-0 pt-8 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-gray-900 rounded-lg p-8 lg:p-12 xl:p-16">
+      <div className="w-full bg-gray-900 pt-8 pb-16 px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Section - Hero Content */}
-          <div className="flex flex-col justify-center">
+          <div className="flex flex-col justify-center h-full">
             {/* Professional Medical Consultation Banner */}
             <div className="bg-orange-800 text-white py-1 px-3 inline-flex items-center rounded-md text-xs font-semibold mb-4 w-fit">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,8 +116,8 @@ const LandingPage = () => {
           </div>
 
           {/* Right Section - EMR Dashboard Preview and Stats */}
-          <div className="flex flex-col">
-            <div className="bg-gray-800 h-64 lg:h-96 flex items-center justify-center rounded-lg mb-8">
+          <div className="flex flex-col h-full">
+            <div className="bg-gray-800 flex-1 flex items-center justify-center rounded-lg mb-8">
               <div className="text-center mb-6">
                 <h3 className="text-white text-xl font-semibold mb-2">EMR Dashboard Preview</h3>
                 <p className="text-white/80 text-sm">Experience our intuitive interface designed for healthcare professionals</p>
@@ -154,7 +178,7 @@ const LandingPage = () => {
       </div>
 
       {/* Everything you need to run modern care section */}
-      <div className="container mx-auto px-4 py-16 text-center">
+      <div className="w-full px-4 py-16 text-center">
         <h2 className="text-white text-3xl font-bold mb-4">Everything you need to run modern care</h2>
         <p className="text-white/80 text-lg mb-12">Built for providers, patients, institutions, and administrators.</p>
 
@@ -244,7 +268,7 @@ const LandingPage = () => {
       </div>
 
       {/* Designed for every role section */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="w-full px-4 py-16">
         <h2 className="text-white text-3xl font-bold mb-8 text-center">Designed for every role</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -324,7 +348,7 @@ const LandingPage = () => {
       </div>
 
       {/* Security & Compliance section */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="w-full px-4 py-16">
         <h2 className="text-white text-3xl font-bold mb-8 text-center">Security & compliance</h2>
         <p className="text-white/80 text-lg mb-12 text-center">We use industry best practices to protect your data end-to-end.</p>
 
@@ -370,7 +394,7 @@ const LandingPage = () => {
       </div>
 
       {/* Testimonials section */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="w-full px-4 py-16">
         <h2 className="text-white text-3xl font-bold mb-8 text-center">What Our Users Say</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Testimonial 1 */}
@@ -440,7 +464,7 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="bg-black text-white py-12">
-        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="w-full px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and Description */}
           <div>
             <div className="flex items-center mb-4">

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 
 const ContactUs: React.FC = () => {
+  const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -27,8 +28,22 @@ const ContactUs: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
+      {/* Back Button */}
+      <div className="w-full px-4 md:px-8 pt-8">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Home
+        </button>
+      </div>
+
       {/* Contact Us Content */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="w-full px-4 md:px-8 py-16">
+        <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">Contact Us</h1>
           <p className="text-gray-300 text-lg max-w-3xl mx-auto">
@@ -217,10 +232,11 @@ const ContactUs: React.FC = () => {
           </div>
         </div>
       </div>
+      </div>
 
       {/* Footer */}
-      <footer className="bg-black text-white py-12">
-        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <footer className="bg-black text-white py-12 w-full">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and Description */}
           <div>
             <div className="flex items-center mb-4">
