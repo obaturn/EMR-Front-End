@@ -5,7 +5,7 @@ export interface Patient {
   last_name: string;
   email?: string;
   phone?: string;
-  dateOfBirth: Date; // ISO date string (e.g., "1990-01-01")
+  dateOfBirth: string; // ISO date string (e.g., "1990-01-01")
   age?: number;
   gender?: "Male" | "Female" | "Other";
   address?: string;

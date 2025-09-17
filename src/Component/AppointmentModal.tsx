@@ -127,14 +127,16 @@ export default function AppointmentModal({
         const patient: Patient = {
           id: res.data.patient.id,
           name: res.data.patient.name,
+          first_name: newPatientData.first_name,
+          last_name: newPatientData.last_name,
           email: res.data.patient.email,
           phone: res.data.patient.phone,
           dateOfBirth: res.data.patient.dateOfBirth,
           gender: res.data.patient.gender,
           address: res.data.patient.address,
           emergencyContact: res.data.patient.emergency_contact,
-          createdAt: res.data.patient.created_at,
-          updatedAt: res.data.patient.updated_at,
+          created_at: res.data.patient.created_at,
+          updated_at: res.data.patient.updated_at,
         }
         setSelectedPatient(patient)
         setStep("details")
