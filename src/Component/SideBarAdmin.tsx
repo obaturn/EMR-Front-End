@@ -130,7 +130,7 @@ const SidebarAdmin = ({ userRole = "doctor", onChatClick, unreadMessageCount = 0
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
-            <span className="text-white font-bold text-sm">S10</span>
+            <span className="text-white font-bold text-sm">OBT</span>
           </div>
           <div className="flex flex-col">
             <span className="font-semibold text-gray-800">Clinic</span>

@@ -196,7 +196,7 @@ export default function CreateAccount() {
     };
 
     try {
-      const res = await fetch("https://emr-backend-f7k2.onrender.com/api/register/", {
+      const res = await fetch("/api/register/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -204,7 +204,12 @@ export default function CreateAccount() {
         body: JSON.stringify(accountData),
       });
 
-      const responseData = await res.json();
+      let responseData;
+      try {
+        responseData = await res.json();
+      } catch (jsonError) {
+        throw new Error(`Server error: ${res.status} ${res.statusText}`);
+      }
 
       if (!res.ok) {
         // Extract validation errors from response
@@ -217,8 +222,8 @@ export default function CreateAccount() {
           }
         }
         throw new Error(
-          errorMessages.length > 0 
-            ? errorMessages.join('\n') 
+          errorMessages.length > 0
+            ? errorMessages.join('\n')
             : 'Registration failed'
         );
       }
@@ -252,7 +257,7 @@ export default function CreateAccount() {
         {/* Left side for branding (desktop only) */}
         <div className="hidden md:flex md:flex-col justify-center items-center w-1/2 bg-gradient-to-br from-orange-300 to-orange-400 rounded-lg p-8 text-white">
           <div className="text-5xl font-bold flex items-center space-x-2">
-            <span className="text-white font-medium text-4xl">S10</span>
+            <span className="text-white font-medium text-4xl">OBT</span>
             <span className="text-gray-100 text-3xl">.Clinic</span>
           </div>
           <p className="text-center mt-4 text-orange-100">Electronic Medical Records System</p>
@@ -263,7 +268,7 @@ export default function CreateAccount() {
           {/* Branding for both mobile and desktop (in form section) */}
           <div className="text-center mb-6">
             <div className="text-4xl font-bold flex items-center justify-center space-x-1">
-              <span className="text-orange-400">S10</span>
+              <span className="text-orange-400">OBT</span>
               <span className="text-gray-600">.Clinic</span>
             </div>
           </div>

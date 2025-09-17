@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
-import axios from 'axios';
+import api from '../ApiService/Api';
 
 export default function ResetPassword() {
   const [showPassword, setShowPassword] = useState(false);
@@ -73,7 +73,7 @@ export default function ResetPassword() {
     setIsLoading(true);
 
     try {
-      await axios.post('https://emr-backend-f7k2.onrender.com/api/auth/reset-password/', {
+      await api.post('/auth/reset-password/', {
         email,
         otp_code: otpString,
         new_password: password,
@@ -95,7 +95,7 @@ export default function ResetPassword() {
         
         {/* Logo */}
         <h1 className="text-4xl font-bold mb-6 text-center">
-          <span className="text-orange-500 font-extrabold">S10</span>
+          <span className="text-orange-500 font-extrabold">OBT</span>
           <span className="text-gray-800">.Clinic</span>
         </h1>
 

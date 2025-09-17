@@ -1,6 +1,10 @@
 import "./App.css"
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
 import Start from "./Component/Start"
+import LandingPage from "./Component/LandingPage"
+import AboutUs from "./Component/AboutUs"
+import LearnMore from "./Component/LearnMore"
+import ContactUs from "./Component/ContactUs"
 import CreateAccount from "./Component/CreateAccount"
 import Login from "./Component/Login"
 import ForgotPassword from "./Component/ForgotPassoword"
@@ -27,7 +31,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Start />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/start" element={<Start />} />
+        <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/learn-more" element={<LearnMore />} />
+        <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/create-account" element={<CreateAccount />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -19,13 +19,18 @@ export const Login = () => {
     setIsLoading(true)
 
     try {
-      const response = await fetch("https://emr-backend-f7k2.onrender.com/api/login/", {
+      const response = await fetch("/api/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, remember_me: rememberPassword }),
       })
 
-      const data = await response.json()
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
 
       if (!response.ok) {
         setErrorMessage(data.detail || "Login failed. Check your credentials.")
@@ -83,7 +88,7 @@ export const Login = () => {
           {/* Mobile header */}
           <div className="lg:hidden bg-gradient-to-r from-orange-400 to-orange-500 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 p-6 mb-8 text-center">
             <h1 className="text-3xl font-bold text-white">
-              <span>S10</span>
+              <span>OBT</span>
               <span className="text-orange-100">.Clinic</span>
             </h1>
             <p className="text-orange-100 mt-2">Welcome back to your dashboard</p>
@@ -93,7 +98,7 @@ export const Login = () => {
             {/* Desktop header */}
             <div className="hidden lg:block text-center mb-8">
               <h1 className="text-3xl font-bold text-gray-800">
-                <span className="text-orange-500">S10</span>
+                <span className="text-orange-500">OBT</span>
                 <span className="text-gray-600">.Clinic</span>
               </h1>
               <h2 className="text-xl font-semibold text-gray-700 mt-3">Sign in to your account</h2>
@@ -194,7 +199,7 @@ export const Login = () => {
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500">New to S10.Clinic?</span>
+                  <span className="px-4 bg-white text-gray-500">New to OBT.Clinic?</span>
                 </div>
               </div>
 

@@ -45,7 +45,7 @@ const Start: FC = () => {
               <div className="w-6 h-6 bg-orange-400 rounded-md"></div>
             </div>
             <h1 className="text-4xl lg:text-5xl xl:text-6xl font-light tracking-tight">
-              <span className="text-orange-500 font-semibold">S10</span>
+              <span className="text-orange-500 font-semibold">OBT</span>
               <span className="text-gray-800">.Clinic</span>
             </h1>
             <p className="text-gray-600 text-lg lg:text-xl font-light max-w-sm mx-auto leading-relaxed">
@@ -61,7 +61,7 @@ const Start: FC = () => {
               onClick={() => navigate("/create-account")}
             >
               <span className="flex items-center justify-center gap-2">
-                START CONSULTING
+                CREATE-ACCOUNT
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>

@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft, Mail, AlertCircle } from "lucide-react"
 
-import axios from "axios"
+import api from "../ApiService/Api"
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("")
@@ -36,7 +36,7 @@ export default function ForgotPassword() {
     setIsLoading(true)
 
     try {
-      await axios.post('https://emr-backend-f7k2.onrender.com/api/auth/forgot-password/', { email: email.trim() })
+      await api.post('/auth/forgot-password/', { email: email.trim() })
       setSuccess(true)
       localStorage.setItem('resetEmail', email.trim())
 
@@ -87,7 +87,7 @@ export default function ForgotPassword() {
         <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
           <div className="max-w-md text-center space-y-6">
             <div className="space-y-2">
-              <h1 className="text-4xl lg:text-5xl font-bold">S10</h1>
+              <h1 className="text-4xl lg:text-5xl font-bold">OBT</h1>
               <h2 className="text-2xl lg:text-3xl font-semibold">Clinic</h2>
             </div>
             <p className="text-lg lg:text-xl text-orange-100">Secure and reliable healthcare management system</p>
@@ -103,7 +103,7 @@ export default function ForgotPassword() {
         <div className="w-full max-w-md space-y-6">
           {/* Mobile logo - Only visible on small screens */}
           <div className="md:hidden text-center space-y-2">
-            <h1 className="text-3xl font-bold text-orange-500">S10</h1>
+            <h1 className="text-3xl font-bold text-orange-500">OBT</h1>
             <h2 className="text-xl font-semibold text-gray-900">Clinic</h2>
           </div>
 
