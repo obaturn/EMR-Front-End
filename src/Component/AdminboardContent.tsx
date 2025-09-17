@@ -65,7 +65,7 @@ const ChatContainer: React.FC<{
     if (!userId) return
 
     // Connect to WebSocket server
-    const newSocket = io('http://localhost:3001', {
+    const newSocket = io('https://chat-emr.onrender.com', {
       transports: ['websocket', 'polling']
     })
 
@@ -211,7 +211,7 @@ const ChatContainer: React.FC<{
                 if (socket) {
                   console.log('Manually requesting online users...')
                   // Request updated user list from server
-                  fetch('http://localhost:3001/api/users/online')
+                  fetch('https://chat-emr.onrender.com/api/users/online')
                     .then(res => res.json())
                     .then(users => {
                       console.log('Manual fetch result:', users)

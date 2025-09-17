@@ -65,7 +65,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ userId, userName, userRol
 
   useEffect(() => {
     // Connect to WebSocket server
-    const newSocket = io('http://localhost:3001', {
+    const newSocket = io('https://chat-emr.onrender.com', {
       transports: ['websocket', 'polling']
     })
 
