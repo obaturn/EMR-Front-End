@@ -124,8 +124,8 @@ const SidebarAdmin = ({ userRole = "doctor", unreadMessageCount = 0 }: SidebarAd
   }
 
   return (
-    <div className="h-screen w-64 bg-white flex flex-col shadow-lg border-r border-gray-200">
-      <div className="p-6 border-b border-gray-200">
+    <div className="h-screen w-64 bg-gradient-to-b from-orange-50 to-white flex flex-col shadow-lg border-r border-orange-200">
+      <div className="p-6 border-b border-orange-200">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
             <span className="text-white font-bold text-sm">OBT</span>
@@ -146,8 +146,8 @@ const SidebarAdmin = ({ userRole = "doctor", unreadMessageCount = 0 }: SidebarAd
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-orange-50 text-orange-600 border-r-2 border-orange-500"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ? "bg-orange-100 text-orange-700 border-r-2 border-orange-500"
+                    : "text-gray-600 hover:bg-orange-50 hover:text-orange-600"
                 }`
               }
             >

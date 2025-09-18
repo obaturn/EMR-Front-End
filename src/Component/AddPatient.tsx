@@ -205,6 +205,7 @@ export default function AddPatient() {
                       errors.first_name ? "border-red-500 bg-red-50" : "border-gray-300"
                     }`}
                     placeholder="Enter first name"
+                    autoComplete="off"
                   />
                   {errors.first_name && <p className="text-sm text-red-600">{errors.first_name}</p>}
                 </div>
@@ -219,6 +220,7 @@ export default function AddPatient() {
                       errors.last_name ? "border-red-500 bg-red-50" : "border-gray-300"
                     }`}
                     placeholder="Enter last name"
+                    autoComplete="off"
                   />
                   {errors.last_name && <p className="text-sm text-red-600">{errors.last_name}</p>}
                 </div>
@@ -238,6 +240,7 @@ export default function AddPatient() {
                     errors.email ? "border-red-500 bg-red-50" : "border-gray-300"
                   }`}
                   placeholder="Enter email address"
+                  autoComplete="off"
                 />
                 {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
               </div>
@@ -260,6 +263,7 @@ export default function AddPatient() {
                       errors.phone ? "border-red-500 bg-red-50" : "border-gray-300"
                     }`}
                     placeholder="Enter phone number"
+                    autoComplete="off"
                   />
                 </div>
                 {errors.phone && <p className="text-sm text-red-600">{errors.phone}</p>}

@@ -336,6 +336,7 @@ const ProfilePage = ({ userName = "User", userRole = "doctor", specialty = "" }:
                       value={editData.firstName}
                       onChange={(e) => handleInputChange("firstName", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      autoComplete="off"
                     />
                   ) : (
                     <p className="text-gray-800">{profileData.firstName}</p>
@@ -349,6 +350,7 @@ const ProfilePage = ({ userName = "User", userRole = "doctor", specialty = "" }:
                       value={editData.lastName}
                       onChange={(e) => handleInputChange("lastName", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      autoComplete="off"
                     />
                   ) : (
                     <p className="text-gray-800">{profileData.lastName}</p>
@@ -362,6 +364,7 @@ const ProfilePage = ({ userName = "User", userRole = "doctor", specialty = "" }:
                       value={editData.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      autoComplete="off"
                     />
                   ) : (
                     <p className="text-gray-800">{profileData.email}</p>
@@ -375,6 +378,7 @@ const ProfilePage = ({ userName = "User", userRole = "doctor", specialty = "" }:
                       value={editData.phone}
                       onChange={(e) => handleInputChange("phone", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      autoComplete="off"
                     />
                   ) : (
                     <p className="text-gray-800">{profileData.phone}</p>

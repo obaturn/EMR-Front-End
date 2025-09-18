@@ -39,19 +39,21 @@ const LandingPage = () => {
         </div>
 
         {/* Dropdown for small screens */}
-        <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'} absolute top-full left-0 right-0 bg-black p-4 z-10`}>
-          <div className="flex flex-col space-y-4">
-            <a href="#" className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors" onClick={() => setIsMenuOpen(false)}>Docs</a>
-            <a href="#" className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors" onClick={() => setIsMenuOpen(false)}>Pricing</a>
-            <button onClick={() => { navigate("/about-us"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors">About Us</button>
-            <button onClick={() => { navigate("/learn-more"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors">Learn More</button>
-            <button onClick={() => { navigate("/contact-us"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors">Contact Us</button>
-            <button onClick={() => { navigate("/login"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors" aria-label="Login to your account">LOGIN TO ACCOUNT</button>
-            <button onClick={() => { navigate("/start"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded text-sm" aria-label="Go to start page">
-              START CONSULTING
-            </button>
+        {isMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-black border-t border-orange-600 shadow-lg z-50">
+            <div className="flex flex-col space-y-2 p-4">
+              <a href="#" className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded text-sm transition-colors text-center" onClick={() => setIsMenuOpen(false)}>Docs</a>
+              <a href="#" className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded text-sm transition-colors text-center" onClick={() => setIsMenuOpen(false)}>Pricing</a>
+              <button onClick={() => { navigate("/about-us"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded text-sm transition-colors text-center">About Us</button>
+              <button onClick={() => { navigate("/learn-more"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded text-sm transition-colors text-center">Learn More</button>
+              <button onClick={() => { navigate("/contact-us"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded text-sm transition-colors text-center">Contact Us</button>
+              <button onClick={() => { navigate("/login"); setIsMenuOpen(false); }} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded text-sm transition-colors text-center" aria-label="Login to your account">LOGIN TO ACCOUNT</button>
+              <button onClick={() => { navigate("/start"); setIsMenuOpen(false); }} className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3 px-4 rounded text-sm transition-colors text-center shadow-lg" aria-label="Go to start page">
+                START CONSULTING
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </nav>
 
       {/* Hero Section */}

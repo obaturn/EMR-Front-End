@@ -143,7 +143,7 @@ export default function ForgotPassword() {
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full h-11 px-3 py-2 text-base border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors"
                     disabled={isLoading}
-                    autoComplete="email"
+                    autoComplete="off"
                   />
                 </div>
 

@@ -234,6 +234,7 @@ export default function AppointmentModal({
                       value={newPatientData.first_name}
                       onChange={(e) => setNewPatientData((prev) => ({ ...prev, first_name: e.target.value }))}
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      autoComplete="off"
                     />
                     <input
                       type="text"
@@ -241,6 +242,7 @@ export default function AppointmentModal({
                       value={newPatientData.last_name}
                       onChange={(e) => setNewPatientData((prev) => ({ ...prev, last_name: e.target.value }))}
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      autoComplete="off"
                     />
                     <input
                       type="email"
@@ -248,6 +250,7 @@ export default function AppointmentModal({
                       value={newPatientData.email}
                       onChange={(e) => setNewPatientData((prev) => ({ ...prev, email: e.target.value }))}
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      autoComplete="off"
                     />
                     <input
                       type="tel"
@@ -255,6 +258,7 @@ export default function AppointmentModal({
                       value={newPatientData.phone}
                       onChange={(e) => setNewPatientData((prev) => ({ ...prev, phone: e.target.value }))}
                       className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      autoComplete="off"
                     />
                     <input
                       type="date"

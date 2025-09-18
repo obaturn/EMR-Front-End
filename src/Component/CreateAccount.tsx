@@ -310,6 +310,7 @@ export default function CreateAccount() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
+                  autoComplete="off"
                 />
 
                 <div className="relative">
@@ -368,6 +369,7 @@ export default function CreateAccount() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="off"
             />
 
             <div className="flex space-x-2">
@@ -407,6 +409,7 @@ export default function CreateAccount() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     required
+                    autoComplete="off"
                   />
                 </div>
               </div>

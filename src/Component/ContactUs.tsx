@@ -69,6 +69,7 @@ const ContactUs: React.FC = () => {
                   required
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white"
                   placeholder="Your full name"
+                  autoComplete="off"
                 />
               </div>
 
@@ -85,6 +86,7 @@ const ContactUs: React.FC = () => {
                   required
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white"
                   placeholder="your.email@example.com"
+                  autoComplete="off"
                 />
               </div>
 
