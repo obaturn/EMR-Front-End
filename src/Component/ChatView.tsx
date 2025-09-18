@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useState, useEffect, useRef } from 'react'
 import io, { Socket } from 'socket.io-client'
 import { FaPaperPlane, FaUserCircle } from 'react-icons/fa'
@@ -21,7 +19,7 @@ interface User {
   userRole: string
 }
 
-const ChatView = () => {
+const ChatView: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -182,16 +180,10 @@ const ChatView = () => {
     : []
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Team Chat</h1>
-        <p className="text-gray-600">Communicate with your team members in real-time</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Online Users Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-gray-800">Online Users</h3>
               <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
@@ -229,7 +221,7 @@ const ChatView = () => {
 
         {/* Chat Messages Area */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-96 flex flex-col">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 h-96 flex flex-col">
             {/* Chat Header */}
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div>
@@ -324,10 +316,9 @@ const ChatView = () => {
               </div>
             )}
           </div>
-        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default ChatView

@@ -24,14 +24,11 @@ interface DashboardContentProps {
   userName?: string
   userRole?: string
   specialty?: string
-  showChat?: boolean
-  onChatToggle?: () => void
   unreadMessageCount?: number
-  onUnreadCountsChange?: (counts: {[key: string]: number}) => void
 }
 
 // Chat Container Component
-const ChatContainer: React.FC<{
+export const ChatContainer: React.FC<{
   userName: string;
   userRole: string;
   onUnreadCountsChange?: (counts: {[key: string]: number}) => void;
@@ -183,7 +180,7 @@ const ChatContainer: React.FC<{
     : []
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-96 flex flex-col">
+    <div className="w-full flex flex-col">
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h3 className="font-semibold text-gray-800">Team Chat</h3>
@@ -386,10 +383,7 @@ const DashboardContent = ({
   userName = "User",
   userRole = "doctor",
   specialty = "",
-  showChat = false,
-  onChatToggle,
-  unreadMessageCount = 0,
-  onUnreadCountsChange
+  unreadMessageCount = 0
 }: DashboardContentProps) => {
   // Get the proper title based on role
   const getRoleTitle = (role: string) => {
@@ -494,25 +488,6 @@ const DashboardContent = ({
         </div>
       </div>
 
-      {/* Chat Container - Shows when chat button is clicked */}
-      {showChat && (
-        <div className="mt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">Team Chat</h2>
-            <button
-              onClick={onChatToggle}
-              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
-            >
-              Close Chat
-            </button>
-          </div>
-          <ChatContainer
-            userName={userName}
-            userRole={userRole}
-            onUnreadCountsChange={onUnreadCountsChange}
-          />
-        </div>
-      )}
 
     </div>
   )

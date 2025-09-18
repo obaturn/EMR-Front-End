@@ -33,7 +33,7 @@ interface MenuItem {
   isChat?: boolean
 }
 
-const SidebarAdmin = ({ userRole = "doctor", onChatClick, unreadMessageCount = 0 }: SidebarAdminProps) => {
+const SidebarAdmin = ({ userRole = "doctor", unreadMessageCount = 0 }: SidebarAdminProps) => {
   const [isOnline, setIsOnline] = useState(true)
 
   // Simulate online/offline status (in real app, this would connect to WebSocket)
@@ -47,54 +47,52 @@ const SidebarAdmin = ({ userRole = "doctor", onChatClick, unreadMessageCount = 0
 
   // Base menu items available to all roles
   const baseMenuItems: MenuItem[] = [
-    { to: `/${userRole}/dashboard`, icon: FaTachometerAlt, label: "Dashboard", isChat: false },
-    { to: `/${userRole}/calendar`, icon: FaCalendarAlt, label: "Calendar", isChat: false },
-    { to: `/${userRole}/patients`, icon: FaUserInjured, label: "Patients", isChat: false },
-    { to: `/${userRole}/reports`, icon: FaFileAlt, label: "Reports", isChat: false },
-    { to: `/${userRole}/profile`, icon: FaUser, label: "Profile", isChat: false },
+    { to: `/${userRole}/dashboard`, icon: FaTachometerAlt, label: "Dashboard" },
+    { to: `/${userRole}/calendar`, icon: FaCalendarAlt, label: "Calendar" },
+    { to: `/${userRole}/patients`, icon: FaUserInjured, label: "Patients" },
+    { to: `/${userRole}/reports`, icon: FaFileAlt, label: "Reports" },
+    { to: `/${userRole}/profile`, icon: FaUser, label: "Profile" },
   ]
 
   // Workflow menu item
   const workflowMenuItem: MenuItem = {
     to: `/${userRole}/workflow`,
     icon: FaProjectDiagram,
-    label: "Workflow",
-    isChat: false
+    label: "Workflow"
   }
 
   // Analytics menu item
   const analyticsMenuItem: MenuItem = {
     to: `/${userRole}/analytics`,
     icon: FaChartBar,
-    label: "Analytics",
-    isChat: false
+    label: "Analytics"
   }
 
-  
+
   const roleSpecificItems: Record<string, MenuItem[]> = {
     doctor: [
-      { to: "/doctor/diagnostics", icon: FaStethoscope, label: "Diagnostics", isChat: false },
-      { to: "/doctor/lab", icon: FaFlask, label: "Lab Results", isChat: false },
-      { to: "/doctor/workspace", icon: FaBriefcase, label: "Workspace", isChat: false },
-      { to: "/doctor/health-promotion", icon: FaLifeRing, label: "Health Promotion", isChat: false },
-      { to: `/${userRole}/feedback`, icon: FaComments, label: "Feedback", isChat: false },
-      { to: `/${userRole}/support`, icon: FaLifeRing, label: "Support", isChat: false },
+      { to: "/doctor/diagnostics", icon: FaStethoscope, label: "Diagnostics" },
+      { to: "/doctor/lab", icon: FaFlask, label: "Lab Results" },
+      { to: "/doctor/workspace", icon: FaBriefcase, label: "Workspace" },
+      { to: "/doctor/health-promotion", icon: FaLifeRing, label: "Health Promotion" },
+      { to: `/${userRole}/feedback`, icon: FaComments, label: "Feedback" },
+      { to: `/${userRole}/support`, icon: FaLifeRing, label: "Support" },
     ],
     nurse: [
-      { to: "/nurse/patient-care", icon: FaUserNurse, label: "Patient Care", isChat: false },
-      { to: "/nurse/medications", icon: FaPills, label: "Medications", isChat: false },
-      { to: "/nurse/vitals", icon: FaHeart, label: "Vital Signs", isChat: false },
-      { to: "/nurse/ward-management", icon: FaBriefcase, label: "Ward Management", isChat: false },
-      { to: `/${userRole}/feedback`, icon: FaComments, label: "Feedback", isChat: false },
-      { to: `/${userRole}/support`, icon: FaLifeRing, label: "Support", isChat: false },
+      { to: "/nurse/patient-care", icon: FaUserNurse, label: "Patient Care" },
+      { to: "/nurse/medications", icon: FaPills, label: "Medications" },
+      { to: "/nurse/vitals", icon: FaHeart, label: "Vital Signs" },
+      { to: "/nurse/ward-management", icon: FaBriefcase, label: "Ward Management" },
+      { to: `/${userRole}/feedback`, icon: FaComments, label: "Feedback" },
+      { to: `/${userRole}/support`, icon: FaLifeRing, label: "Support" },
     ],
     pharmacy: [
-      { to: "/pharmacy/prescriptions", icon: FaPills, label: "Prescriptions", isChat: false },
-      { to: "/pharmacy/inventory", icon: FaBoxes, label: "Inventory", isChat: false },
-      { to: "/pharmacy/dispensing", icon: FaFlask, label: "Dispensing", isChat: false },
-      { to: "/pharmacy/drug-info", icon: FaFileAlt, label: "Drug Information", isChat: false },
-      { to: `/${userRole}/feedback`, icon: FaComments, label: "Feedback", isChat: false },
-      { to: `/${userRole}/support`, icon: FaLifeRing, label: "Support", isChat: false },
+      { to: "/pharmacy/prescriptions", icon: FaPills, label: "Prescriptions" },
+      { to: "/pharmacy/inventory", icon: FaBoxes, label: "Inventory" },
+      { to: "/pharmacy/dispensing", icon: FaFlask, label: "Dispensing" },
+      { to: "/pharmacy/drug-info", icon: FaFileAlt, label: "Drug Information" },
+      { to: `/${userRole}/feedback`, icon: FaComments, label: "Feedback" },
+      { to: `/${userRole}/support`, icon: FaLifeRing, label: "Support" },
     ],
   }
 
@@ -142,39 +140,32 @@ const SidebarAdmin = ({ userRole = "doctor", onChatClick, unreadMessageCount = 0
       <nav className="flex-1 overflow-y-auto py-4">
         <div className="px-4 space-y-1">
           {menuItems.map((item) => (
-            item.isChat ? (
-              <button
-                key={item.to}
-                onClick={onChatClick}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50 hover:text-gray-900 w-full text-left"
-              >
-                <div className="relative">
-                  <item.icon className="w-4 h-4" />
-                  <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  {unreadMessageCount > 0 && (
-                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                      {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
-                    </div>
-                  )}
-                </div>
-                {item.label}
-              </button>
-            ) : (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-orange-50 text-orange-600 border-r-2 border-orange-500"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  }`
-                }
-              >
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-orange-50 text-orange-600 border-r-2 border-orange-500"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`
+              }
+            >
+              <div className="relative">
                 <item.icon className="w-4 h-4" />
-                {item.label}
-              </NavLink>
-            )
+                {item.isChat && (
+                  <>
+                    <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    {unreadMessageCount > 0 && (
+                      <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                        {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+              {item.label}
+            </NavLink>
           ))}
         </div>
       </nav>
